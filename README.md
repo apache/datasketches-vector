@@ -1,7 +1,8 @@
+<!--
 [![][travis img]][travis] [![][mavenbadge img]][mavenbadge] [![codecov](https://codecov.io/gh/DataSketches/sketches-vector/branch/master/graph/badge.svg)](https://codecov.io/gh/DataSketches/sketches-vector)
 
 [![][gitter img]][gitter]
-
+-->
 =================
 
 # Sketches Vector Library
