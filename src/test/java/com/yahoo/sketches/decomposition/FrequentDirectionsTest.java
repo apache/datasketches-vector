@@ -11,7 +11,6 @@ import java.util.Arrays;
 import com.yahoo.memory.Memory;
 import com.yahoo.memory.WritableMemory;
 import com.yahoo.sketches.MatrixFamily;
-import com.yahoo.sketches.SketchesArgumentException;
 import com.yahoo.sketches.matrix.Matrix;
 import org.testng.annotations.Test;
 
@@ -212,7 +211,7 @@ public class FrequentDirectionsTest {
     try {
       fd1.update(fd2);
       fail();
-    } catch (final SketchesArgumentException e) {
+    } catch (final IllegalArgumentException e) {
       // expected
     }
 
@@ -222,7 +221,7 @@ public class FrequentDirectionsTest {
     try {
       fd1.update(fd2);
       fail();
-    } catch (final SketchesArgumentException e) {
+    } catch (final IllegalArgumentException e) {
       // expected
     }
   }
@@ -292,7 +291,7 @@ public class FrequentDirectionsTest {
     mem.putByte(PreambleUtil.SER_VER_BYTE, (byte) 0);
     try {
       FrequentDirections.heapify(mem);
-    } catch (final SketchesArgumentException e) {
+    } catch (final IllegalArgumentException e) {
       // expected
     }
 
@@ -302,7 +301,7 @@ public class FrequentDirectionsTest {
     mem.putByte(PreambleUtil.FAMILY_BYTE, (byte) 0);
     try {
       FrequentDirections.heapify(mem);
-    } catch (final SketchesArgumentException e) {
+    } catch (final IllegalArgumentException e) {
       // expected
     }
   }
@@ -314,7 +313,7 @@ public class FrequentDirectionsTest {
     Memory mem = Memory.wrap(bytes);
     try {
       FrequentDirections.heapify(mem);
-    } catch (final SketchesArgumentException e) {
+    } catch (final IllegalArgumentException e) {
       // expected
     }
 
@@ -325,7 +324,7 @@ public class FrequentDirectionsTest {
     mem = Memory.wrap(bytes);
     try {
       FrequentDirections.heapify(mem);
-    } catch (final SketchesArgumentException e) {
+    } catch (final IllegalArgumentException e) {
       // expected
     }
   }

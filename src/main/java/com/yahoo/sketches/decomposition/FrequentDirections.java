@@ -30,7 +30,6 @@ import org.ojalgo.matrix.store.SparseStore;
 import com.yahoo.memory.Memory;
 import com.yahoo.memory.WritableMemory;
 import com.yahoo.sketches.MatrixFamily;
-import com.yahoo.sketches.SketchesArgumentException;
 import com.yahoo.sketches.matrix.Matrix;
 import com.yahoo.sketches.matrix.MatrixBuilder;
 
@@ -75,12 +74,12 @@ public final class FrequentDirections {
     final int preLongs = getAndCheckPreLongs(srcMem);
     final int serVer = extractSerVer(srcMem);
     if (serVer != PreambleUtil.SER_VER) {
-      throw new SketchesArgumentException("Invalid serialization version: " + serVer);
+      throw new IllegalArgumentException("Invalid serialization version: " + serVer);
     }
 
     final int family = extractFamilyID(srcMem);
     if (family != MatrixFamily.FREQUENTDIRECTIONS.getID()) {
-      throw new SketchesArgumentException("Possible corruption: Family id (" + family + ") "
+      throw new IllegalArgumentException("Possible corruption: Family id (" + family + ") "
               + "is not a FrequentDirections sketch");
     }
 
@@ -180,7 +179,7 @@ public final class FrequentDirections {
     }
 
     if ((fd.d_ != d_) || (fd.k_ < k_)) {
-      throw new SketchesArgumentException("Incoming sketch must have same number of dimensions "
+      throw new IllegalArgumentException("Incoming sketch must have same number of dimensions "
               + "and no smaller a value of k");
     }
 

@@ -9,7 +9,6 @@ import static com.yahoo.memory.UnsafeUtil.unsafe;
 
 import com.yahoo.memory.Memory;
 import com.yahoo.sketches.MatrixFamily;
-import com.yahoo.sketches.SketchesArgumentException;
 
 /**
  * This class defines the preamble items structure and provides basic utilities for some of the key fields.
@@ -221,7 +220,7 @@ public final class PreambleUtil {
   }
 
   private static void throwNotBigEnough(final long cap, final int required) {
-    throw new SketchesArgumentException(
+    throw new IllegalArgumentException(
             "Possible Corruption: Size of byte array or Memory not large enough: Size: " + cap
                     + ", Required: " + required);
   }

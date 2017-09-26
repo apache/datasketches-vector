@@ -65,7 +65,7 @@ public enum MatrixFamily {
    */
   public void checkFamilyID(final int id) {
     if (id != id_) {
-      throw new SketchesArgumentException(
+      throw new IllegalArgumentException(
               "Possible Corruption: This Family " + this.toString()
                       + " does not match the ID of the given Family: " + idToFamily(id).toString());
     }
@@ -108,7 +108,7 @@ public enum MatrixFamily {
   public static MatrixFamily idToFamily(final int id) {
     final MatrixFamily f = lookupID.get(id);
     if (f == null) {
-      throw new SketchesArgumentException("Possible Corruption: Illegal Family ID: " + id);
+      throw new IllegalArgumentException("Possible Corruption: Illegal Family ID: " + id);
     }
     return f;
   }
@@ -121,7 +121,7 @@ public enum MatrixFamily {
   public static MatrixFamily stringToFamily(final String famName) {
     final MatrixFamily f = lookupFamName.get(famName.toUpperCase());
     if (f == null) {
-      throw new SketchesArgumentException("Possible Corruption: Illegal Family Name: " + famName);
+      throw new IllegalArgumentException("Possible Corruption: Illegal Family Name: " + famName);
     }
     return f;
   }
@@ -138,6 +138,6 @@ public enum MatrixFamily {
         return f;
       }
     }
-    throw new SketchesArgumentException("Possible Corruption: Unknown object");
+    throw new IllegalArgumentException("Possible Corruption: Unknown object");
   }
 }

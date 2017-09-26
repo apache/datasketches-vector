@@ -5,7 +5,6 @@ import static org.testng.Assert.fail;
 
 import com.yahoo.memory.Memory;
 import com.yahoo.memory.WritableMemory;
-import com.yahoo.sketches.SketchesArgumentException;
 import org.ojalgo.matrix.store.PrimitiveDenseStore;
 import org.testng.annotations.Test;
 
@@ -130,7 +129,7 @@ public class MatrixImplOjAlgoTest {
     try {
       m.setRow(1, shortRow);
       fail();
-    } catch (final SketchesArgumentException e) {
+    } catch (final IllegalArgumentException e) {
       // expected
     }
 
@@ -138,7 +137,7 @@ public class MatrixImplOjAlgoTest {
     try {
       m.setColumn(1, longColumn);
       fail();
-    } catch (final SketchesArgumentException e) {
+    } catch (final IllegalArgumentException e) {
       // expected
     }
   }
@@ -155,7 +154,7 @@ public class MatrixImplOjAlgoTest {
     try {
       MatrixImplOjAlgo.heapifyInstance(mem);
       fail();
-    } catch (final SketchesArgumentException e) {
+    } catch (final IllegalArgumentException e) {
       // expected
     }
   }
@@ -172,7 +171,7 @@ public class MatrixImplOjAlgoTest {
     try {
       MatrixImplOjAlgo.heapifyInstance(mem);
       fail();
-    } catch (final SketchesArgumentException e) {
+    } catch (final IllegalArgumentException e) {
       // expected
     }
   }
@@ -184,7 +183,7 @@ public class MatrixImplOjAlgoTest {
     try {
       MatrixImplOjAlgo.heapifyInstance(mem);
       fail();
-    } catch (final SketchesArgumentException e) {
+    } catch (final IllegalArgumentException e) {
       // expected
     }
   }

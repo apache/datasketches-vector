@@ -21,7 +21,6 @@ import org.ojalgo.matrix.store.PrimitiveDenseStore;
 import com.yahoo.memory.Memory;
 import com.yahoo.memory.WritableMemory;
 import com.yahoo.sketches.MatrixFamily;
-import com.yahoo.sketches.SketchesArgumentException;
 
 public final class MatrixImplOjAlgo extends Matrix {
   private PrimitiveDenseStore mtx_;
@@ -46,7 +45,7 @@ public final class MatrixImplOjAlgo extends Matrix {
     final int minBytes = MatrixFamily.MATRIX.getMinPreLongs() * Long.BYTES;
     final long memCapBytes = srcMem.getCapacity();
     if (memCapBytes < minBytes) {
-      throw new SketchesArgumentException("Source Memory too small: " + memCapBytes
+      throw new IllegalArgumentException("Source Memory too small: " + memCapBytes
               + " < " + minBytes);
     }
 
@@ -55,11 +54,11 @@ public final class MatrixImplOjAlgo extends Matrix {
     final int familyID = extractFamilyID(srcMem);
 
     if (serVer != 1) {
-      throw new SketchesArgumentException("Invalid SerVer reading srcMem. Expected 1, found: "
+      throw new IllegalArgumentException("Invalid SerVer reading srcMem. Expected 1, found: "
               + serVer);
     }
     if (familyID != MatrixFamily.MATRIX.getID()) {
-      throw new SketchesArgumentException("srcMem does not point to a Matrix");
+      throw new IllegalArgumentException("srcMem does not point to a Matrix");
     }
 
     final int flags = extractFlags(srcMem);
@@ -194,7 +193,7 @@ public final class MatrixImplOjAlgo extends Matrix {
   @Override
   public void setRow(final int row, final double[] values) {
     if (values.length != mtx_.countColumns()) {
-      throw new SketchesArgumentException("Invalid number of elements for row. Expected "
+      throw new IllegalArgumentException("Invalid number of elements for row. Expected "
               + mtx_.countColumns() + ", found " + values.length);
     }
 
@@ -206,7 +205,7 @@ public final class MatrixImplOjAlgo extends Matrix {
   @Override
   public void setColumn(final int column, final double[] values) {
     if (values.length != mtx_.countRows()) {
-      throw new SketchesArgumentException("Invalid number of elements for column. Expected "
+      throw new IllegalArgumentException("Invalid number of elements for column. Expected "
               + mtx_.countRows() + ", found " + values.length);
     }
 

@@ -9,7 +9,6 @@ import static com.yahoo.memory.UnsafeUtil.unsafe;
 
 import com.yahoo.memory.Memory;
 import com.yahoo.sketches.MatrixFamily;
-import com.yahoo.sketches.SketchesArgumentException;
 
 /**
  * This class defines the preamble items structure and provides basic utilities for some of the
@@ -93,13 +92,13 @@ public final class MatrixPreambleUtil {
     final int preLongs = getAndCheckPreLongs(mem);  // make sure we can get the assumed preamble
     final MatrixFamily family = MatrixFamily.idToFamily(mem.getByte(FAMILY_BYTE));
     if (family != MatrixFamily.MATRIX) {
-      throw new SketchesArgumentException("Invalid family in memory region. Expected Matrix; "
+      throw new IllegalArgumentException("Invalid family in memory region. Expected Matrix; "
               + "Found: " + family.getFamilyName());
     }
 
     final int serVer = extractSerVer(mem);
     if (serVer != SER_VER) {
-      throw new SketchesArgumentException("Invalid serialization version in memory region. "
+      throw new IllegalArgumentException("Invalid serialization version in memory region. "
               + "Found: " + serVer);
     }
 
@@ -224,7 +223,7 @@ public final class MatrixPreambleUtil {
   }
 
   private static void throwNotBigEnough(final long cap, final int required) {
-    throw new SketchesArgumentException(
+    throw new IllegalArgumentException(
             "Possible Corruption: Size of byte array or Memory not large enough: Size: " + cap
                     + ", Required: " + required);
   }

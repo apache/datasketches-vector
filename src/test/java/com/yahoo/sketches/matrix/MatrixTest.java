@@ -8,7 +8,6 @@ import static org.testng.Assert.fail;
 
 import com.yahoo.memory.Memory;
 import com.yahoo.sketches.MatrixFamily;
-import com.yahoo.sketches.SketchesArgumentException;
 import org.testng.annotations.Test;
 
 public class MatrixTest {
@@ -41,7 +40,7 @@ public class MatrixTest {
       final Object notAMatrix = 1.0;
       Matrix.wrap(notAMatrix);
       fail();
-    } catch (final SketchesArgumentException e) {
+    } catch (final IllegalArgumentException e) {
       // expected
     }
 

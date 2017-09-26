@@ -6,8 +6,6 @@
 
 package com.yahoo.sketches.matrix;
 
-import com.yahoo.sketches.SketchesArgumentException;
-
 /**
  * Provides a builder for Matrix objects.
  */
@@ -68,7 +66,7 @@ public class MatrixBuilder {
 
       case NATIVE:
       default:
-        throw new SketchesArgumentException("Only Algo.OJALGO is currently supported Matrix type");
+        throw new IllegalArgumentException("Only Algo.OJALGO is currently supported Matrix type");
     }
   }
 }

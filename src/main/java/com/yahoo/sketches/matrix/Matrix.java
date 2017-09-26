@@ -12,7 +12,6 @@ import org.ojalgo.matrix.store.PrimitiveDenseStore;
 
 import com.yahoo.memory.Memory;
 import com.yahoo.sketches.MatrixFamily;
-import com.yahoo.sketches.SketchesArgumentException;
 
 
 /**
@@ -55,7 +54,7 @@ public abstract class Matrix {
       return MatrixImplOjAlgo.wrap((PrimitiveDenseStore) mtx);
     }
     else {
-      throw new SketchesArgumentException("wrap() does not currently support "
+      throw new IllegalArgumentException("wrap() does not currently support "
               + mtx.getClass().toString());
     }
   }
