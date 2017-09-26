@@ -1,3 +1,17 @@
+# Eclipse project files
+.classpath
+.project
+.settings/
+.checkstyle
+
+# IntelliJ project files
+*.iml
+*.ipr
+*.iws
+
+# OSX files
+.DS_Store
+
 # Compiled class file
 *.class
 

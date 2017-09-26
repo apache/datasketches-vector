@@ -123,7 +123,7 @@ public final class MatrixImplOjAlgo extends Matrix {
     final int preLongs = 3;
 
     // for non-compact we can do an array copy, so save as non-compact if using the entire matrix
-    final long numElements = numRows * numCols;
+    final long numElements = (long) numRows * numCols;
     final boolean isCompact = numElements < mtx_.count();
     if (!isCompact) {
       return toByteArray();
