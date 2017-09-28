@@ -64,20 +64,6 @@ public final class MatrixPreambleUtil {
   // Other constants
   static final int SER_VER               = 1;
 
-
-
-  /**
-   * Returns a human readable string summary of the preamble state of the given byte array.
-   * Used primarily in testing.
-   *
-   * @param byteArr the given byte array.
-   * @return the summary preamble string.
-   */
-  public static String preambleToString(final byte[] byteArr) {
-    final Memory mem = Memory.wrap(byteArr);
-    return preambleToString(mem);
-  }
-
   /**
    * Returns a human readable string summary of the preamble state of the given Memory.
    * Note: other than making sure that the given Memory size is large
@@ -87,14 +73,10 @@ public final class MatrixPreambleUtil {
    * @param mem the given Memory.
    * @return the summary preamble string.
    */
-  private static String preambleToString(final Memory mem) {
+  public static String preambleToString(final Memory mem) {
 
     final int preLongs = getAndCheckPreLongs(mem);  // make sure we can get the assumed preamble
-    final MatrixFamily family = MatrixFamily.idToFamily(mem.getByte(FAMILY_BYTE));
-    if (family != MatrixFamily.MATRIX) {
-      throw new IllegalArgumentException("Invalid family in memory region. Expected Matrix; "
-              + "Found: " + family.getFamilyName());
-    }
+    final MatrixFamily family = MatrixFamily.idToFamily(extractFamilyID(mem));
 
     final int serVer = extractSerVer(mem);
     if (serVer != SER_VER) {

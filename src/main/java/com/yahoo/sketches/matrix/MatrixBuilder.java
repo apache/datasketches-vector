@@ -32,7 +32,7 @@ public class MatrixBuilder {
 
   private Algo type_ = Algo.OJALGO; // default type
 
-  MatrixBuilder() {}
+  public MatrixBuilder() {}
 
   /**
    * Sets the underlying type of object to use with any Matrix objects created.
@@ -45,10 +45,10 @@ public class MatrixBuilder {
   }
 
   /**
-   * Returns a value from an enum definig the type of object backing any Matrix objects created.
+   * Returns a value from an enum defining the type of object backing any Matrix objects created.
    * @return An item from the Algo enum.
    */
-  public Algo getFamily() {
+  public Algo getBackingType() {
     return type_;
   }
 

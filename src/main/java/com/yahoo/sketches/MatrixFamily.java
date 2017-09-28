@@ -26,7 +26,7 @@ public enum MatrixFamily {
    * The Frequent Directions sketch is used for approximate Singular Value Decomposition (SVD) of a
    * matrix.
    */
-  MATRIX(128, "FrequentDirections", 2, 3),
+  MATRIX(128, "Matrix", 2, 3),
   FREQUENTDIRECTIONS(129, "FrequentDirections", 2, 4);
 
 
