@@ -130,9 +130,6 @@ public final class MatrixImplOjAlgo extends Matrix {
 
     assert numElements < mtx_.count();
 
-    //final boolean isEmpty = (numRows == 0) || (numColumns == 0);
-    //final int flags = COMPACT_FLAG_MASK | (isEmpty ? EMPTY_FLAG_MASK : 0);
-
     final int outBytes = (int) ((preLongs * Long.BYTES) + (numElements * Double.BYTES));
     final byte[] outByteArr = new byte[outBytes];
     final WritableMemory memOut = WritableMemory.wrap(outByteArr);

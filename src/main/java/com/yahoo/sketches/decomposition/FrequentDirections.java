@@ -2,6 +2,7 @@ package com.yahoo.sketches.decomposition;
 
 import static com.yahoo.memory.UnsafeUtil.LS;
 import static com.yahoo.sketches.decomposition.PreambleUtil.EMPTY_FLAG_MASK;
+import static com.yahoo.sketches.decomposition.PreambleUtil.SER_VER;
 import static com.yahoo.sketches.decomposition.PreambleUtil.extractFamilyID;
 import static com.yahoo.sketches.decomposition.PreambleUtil.extractFlags;
 import static com.yahoo.sketches.decomposition.PreambleUtil.extractK;
@@ -73,7 +74,7 @@ public final class FrequentDirections {
   public static FrequentDirections heapify(final Memory srcMem) {
     final int preLongs = getAndCheckPreLongs(srcMem);
     final int serVer = extractSerVer(srcMem);
-    if (serVer != PreambleUtil.SER_VER) {
+    if (serVer != SER_VER) {
       throw new IllegalArgumentException("Invalid serialization version: " + serVer);
     }
 
@@ -152,8 +153,8 @@ public final class FrequentDirections {
     }
 
     if (vector.length != d_) {
-      throw new IllegalArgumentException("Input vector has too few dimensions. Expected " + d_
-              + "; found " + vector.length);
+      throw new IllegalArgumentException("Input vector has wrong number of dimensions. Expected "
+              + d_ + "; found " + vector.length);
     }
 
     if (nextZeroRow_ == l_) {
@@ -202,7 +203,7 @@ public final class FrequentDirections {
 
   /**
    * Checks if the sketch is empty, specifically whether it has processed any input data.
-   * @return True if hte sketch has not yet processed any input
+   * @return True if the sketch has not yet processed any input
    */
   public boolean isEmpty() {
     return n_ == 0;
@@ -240,7 +241,7 @@ public final class FrequentDirections {
    * during the algorithm.
    * @param compensative If true, adjusts for mass subtracted during the algorithm, otherwise
    *                     uses raw singular values.
-   * @return As array of singular values.
+   * @return An array of singular values.
    */
   public double[] getSingularValues(final boolean compensative) {
     final SingularValue<Double> svd = SingularValue.make(B_);
@@ -263,7 +264,7 @@ public final class FrequentDirections {
   }
 
   /**
-   * Returns an orthonormal projection Matrix that can be use to project input vectors into the
+   * Returns an orthonormal projection Matrix that can be used to project input vectors into the
    * k-dimensional space represented by the sketch.
    * @return An orthonormal Matrix object
    */
@@ -305,7 +306,7 @@ public final class FrequentDirections {
       reduceRank();
     }
 
-    final PrimitiveDenseStore result;
+    final PrimitiveDenseStore result = PrimitiveDenseStore.FACTORY.makeZero(nextZeroRow_, d_);
 
     if (compensative) {
       // in the event we just called reduceRank(), the high rows are already zeroed out so no need
@@ -323,11 +324,9 @@ public final class FrequentDirections {
         S_.set(i, i, 0.0);
       }
 
-      //result = PrimitiveDenseStore.FACTORY.makeZero(l_, d_);
-      result = PrimitiveDenseStore.FACTORY.makeZero(nextZeroRow_, d_);
       S_.multiply(svd.getQ2().transpose(), result);
     } else {
-      result = PrimitiveDenseStore.FACTORY.makeZero(nextZeroRow_, d_);
+      // there's gotta be a better way to copy rows than this
       for (int i = 0; i < nextZeroRow_; ++i) {
         int j = 0;
         for (double d : B_.sliceRow(i)) {
@@ -362,12 +361,11 @@ public final class FrequentDirections {
    * Returns a serialized representation of the sketch.
    * <p>Note: If compress is true, will modify sketch state if the sketch would store more than k
    * rows by applying SVD to compress the sketch to examply k rows.</p>
-   * @param compress If true, compresses teh sketch to no more than k rows.
+   * @param compress If true, compresses the sketch to no more than k rows.
    * @return A serialized representation of the sketch.
    */
   public byte[] toByteArray(final boolean compress) {
     final boolean empty = isEmpty();
-    final int serVer = 1;
     final int familyId = MatrixFamily.FREQUENTDIRECTIONS.getID();
 
     final Matrix wrapB = Matrix.wrap(B_);
@@ -390,7 +388,7 @@ public final class FrequentDirections {
     final long memAddr = memOut.getCumulativeOffset(0L);
 
     insertPreLongs(memObj, memAddr, preLongs);
-    insertSerVer(memObj, memAddr, serVer);
+    insertSerVer(memObj, memAddr, SER_VER);
     insertFamilyID(memObj, memAddr, familyId);
     insertFlags(memObj, memAddr, (empty ? EMPTY_FLAG_MASK : 0));
     insertK(memObj, memAddr, k_);
@@ -511,8 +509,6 @@ public final class FrequentDirections {
   double getSvAdjustment() { return svAdjustment_; }
 
   private void reduceRank() {
-    //++numReduce;
-
     final SingularValue<Double> svd = SingularValue.make(B_);
     svd.compute(B_);
     svd.getSingularValues(sv_);
@@ -543,35 +539,4 @@ public final class FrequentDirections {
 
     S_.multiply(svd.getQ2().transpose()).supplyTo(B_);
   }
-
-  /*
-  private static double computeFrobNorm(final MatrixStore<Double> M) {
-    double sum = 0.0;
-    for (double d : M) {
-      sum += d * d;
-    }
-    return Math.sqrt(sum);
-  }
-
-  private static double computeFrobNorm(final MatrixStore<Double> M, final int k) {
-    double sum = 0.0;
-    for (int i = 0; i < k; ++i) {
-      for (double d : M.sliceRow(i)) {
-        sum += d * d;
-      }
-    }
-    return Math.sqrt(sum);
-  }
-
-  private static MatrixStore<Double> getKRows(final MatrixStore<Double> M, final int k) {
-    PrimitiveDenseStore result = PrimitiveDenseStore.FACTORY.makeZero(k, M.countColumns());
-    for (int i = 0; i < k; ++i) {
-      int j = 0;
-      for (double d : M.sliceRow(i)) {
-        result.set(i, j++, d);
-      }
-    }
-    return result;
-  }
-  */
 }
