@@ -400,24 +400,25 @@ public final class FrequentDirections {
   }
 
   /**
-   * Returns a human-readable summary of the sketch and, optionally, prints the raw data.
-   * @param printMatrix If true, prints sketch's data matrix
+   * Returns a human-readable summary of the sketch and, optionally, prints the singular values.
+   * @param printSingularValues If true, prints sketch's data matrix
    * @return A String representation of the sketch.
    */
-  public String toString(final boolean printMatrix) {
-    return toString(printMatrix, false, false);
+  public String toString(final boolean printSingularValues) {
+    return toString(printSingularValues, false, false);
   }
 
   /**
    * Returns a human-readable summary of the sketch, optionally printing either the filled
    * or complete sketch matrix, and also optionally adjusting the singular values based on the
    * total weight subtacted during the algorithm.
+   * @param printSingularValues If true, prints the sketch's singular values
    * @param printMatrix If true, prints the sketch's data matrix
-   * @param fullMatrix If true, prints all rows; if false, only non-empty rows
    * @param applyCompensation If true, prints adjusted singular values
    * @return A String representation of the sketch.
    */
-  public String toString(final boolean printMatrix, final boolean fullMatrix,
+  public String toString(final boolean printSingularValues,
+                         final boolean printMatrix,
                          final boolean applyCompensation) {
     final StringBuilder sb = new StringBuilder();
 
@@ -435,32 +436,32 @@ public final class FrequentDirections {
     sb.append("   numRows      : ").append(nextZeroRow_).append(LS);
     sb.append("   SV adjustment: ").append(svAdjustment_).append(LS);
 
+    if (printSingularValues) {
+      sb.append("   Singular Vals: ")
+              .append(applyCompensation ? "(adjusted)" : "(unadjusted)").append(LS);
+      final double[] sv = getSingularValues(applyCompensation);
+      for (int i = 0; i < Math.min(k_, n_); ++i) {
+        if (sv[i] > 0.0) {
+          double val = sv[i];
+          if (val > 0.0 && applyCompensation) {
+            val = Math.sqrt(val * val + svAdjustment_);
+          }
+
+          sb.append("   \t").append(i).append(":\t").append(val).append(LS);
+        }
+      }
+    }
+
     if (!printMatrix) {
       return sb.toString();
     }
 
-    sb.append("   Singular Vals: ")
-            .append(applyCompensation ? "(adjusted)" : "(unadjusted)").append(LS);
-    final double[] sv = getSingularValues(applyCompensation);
-    for (int i = 0; i < Math.min(k_, n_); ++i) {
-      if (sv[i] > 0.0) {
-        double val = sv[i];
-        if (val > 0.0 && applyCompensation) {
-          val = Math.sqrt(val * val + svAdjustment_);
-        }
-
-        sb.append("   \t").append(i).append(":\t").append(val).append(LS);
-      }
-    }
-
     final Matrix mtx = Matrix.wrap(B_);
-
-    final int tmpRowDim = fullMatrix ? nextZeroRow_ : Math.min(k_, nextZeroRow_);
     final int tmpColDim = (int) mtx.getNumColumns();
 
     sb.append("   Matrix data  :").append(LS);
     sb.append(mtx.getClass().getName());
-    sb.append(" < ").append(tmpRowDim).append(" x ").append(tmpColDim).append(" >");
+    sb.append(" < ").append(nextZeroRow_).append(" x ").append(tmpColDim).append(" >");
 
     // First element
     sb.append("\n{ { ").append(mtx.getElement(0, 0));
@@ -471,7 +472,7 @@ public final class FrequentDirections {
     }
 
     // For each of the remaining rows
-    for (int i = 1; i < tmpRowDim; i++) {
+    for (int i = 1; i < nextZeroRow_; i++) {
 
       // First column
       sb.append(" },\n{ ").append(mtx.getElement(i, 0));
