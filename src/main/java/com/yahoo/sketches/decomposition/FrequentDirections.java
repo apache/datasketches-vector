@@ -233,7 +233,7 @@ public final class FrequentDirections {
    * @return An array of singular values.
    */
   public double[] getSingularValues() {
-    return getSingularValues(true);
+    return getSingularValues(false);
   }
 
   /**
@@ -283,34 +283,39 @@ public final class FrequentDirections {
   }
 
   /**
-   * Calls <tt>getResult(true, false)</tt>
-   * @return A Matrix representing the data in this sketch
+   * Reduces matrix rank to no more than k, regardless of whether the sketch has reached its
+   * internal capacity. Has no effect if there are no more than k active rows.
    */
-  public Matrix getResult() {
-    return getResult(true, false);
+  public void forceReduceRank() {
+    if (nextZeroRow_ > k_) {
+      reduceRank();
+    }
   }
 
   /**
-   * Returns a Matrix with the sketch's estimate of the SVD of the input data.
-   * @param compress If true, force compression down to no more than k vectors
+   * Returns a Matrix with the current state of the sketch. Call <tt>trim()</tt> first to ensure
+   * no more than k rows. Equivalent to calling <tt>getResult(false)</tt>.
+   * @return A Matrix representing the data in this sketch
+   */
+  public Matrix getResult() {
+    return getResult(false);
+  }
+
+  /**
+   * Returns a Matrix with the current state of the sketch. Call <tt>trim()</tt> first to ensure
+   * no more than k rows. If compensative, uses only the top k singular values.
    * @param compensative If true, applies adjustment to singular values based on the cumulative
    *                     weight subtracted off
    * @return A Matrix representing the data in this sketch
    */
-  public Matrix getResult(final boolean compress, final boolean compensative) {
+  public Matrix getResult(final boolean compensative) {
     if (isEmpty()) {
       return null;
-    }
-
-    if (compress && nextZeroRow_ > k_) {
-      reduceRank();
     }
 
     final PrimitiveDenseStore result = PrimitiveDenseStore.FACTORY.makeZero(nextZeroRow_, d_);
 
     if (compensative) {
-      // in the event we just called reduceRank(), the high rows are already zeroed out so no need
-      // to do so again
       final SingularValue<Double> svd = SingularValue.make(B_);
       svd.compute(B_);
       svd.getSingularValues(sv_);
@@ -347,33 +352,14 @@ public final class FrequentDirections {
   }
 
   /**
-   * Returns a serialized representation of the sketch. Equivalent to calling <tt>toByteArray
-   * (true)</tt>.
-   * <p>Note: May modify sketch state. If the sketch would store more than k rows, applies SVD to
-   * compress the sketch to examply k rows.</p>
+   * Returns a serialized representation of the sketch.
    * @return A serialized representation of the sketch.
    */
   public byte[] toByteArray() {
-    return toByteArray(true);
-  }
-
-  /**
-   * Returns a serialized representation of the sketch.
-   * <p>Note: If compress is true, will modify sketch state if the sketch would store more than k
-   * rows by applying SVD to compress the sketch to examply k rows.</p>
-   * @param compress If true, compresses the sketch to no more than k rows.
-   * @return A serialized representation of the sketch.
-   */
-  public byte[] toByteArray(final boolean compress) {
     final boolean empty = isEmpty();
     final int familyId = MatrixFamily.FREQUENTDIRECTIONS.getID();
 
     final Matrix wrapB = Matrix.wrap(B_);
-
-    // project down to k rows to serialize, chasing the 2GB byte[] limit
-    if (compress && nextZeroRow_ > k_) {
-      reduceRank();
-    }
 
     final int preLongs = empty
             ? MatrixFamily.FREQUENTDIRECTIONS.getMinPreLongs()

@@ -66,7 +66,6 @@ public class FrequentDirectionsTest {
       if (i > 0) {
         input[i - 1] = 0.0;
       }
-      //input[i] = (2 * k) - (i * 1.0);
       input[i] = i * 1.0;
       fd.update(input);
     }
@@ -80,6 +79,8 @@ public class FrequentDirectionsTest {
     assertEquals(fd.getNumRows(), k + 1);
 
     fd.reset();
+    assertTrue(fd.isEmpty());
+    fd.forceReduceRank(); // should be a no-op
     assertTrue(fd.isEmpty());
 
     println(fd.toString());
@@ -137,13 +138,9 @@ public class FrequentDirectionsTest {
     assertEquals(fd1.getNumRows(), expectedRows);
     assertEquals(fd1.getN(), 2 * initialRows);
 
-    Matrix result = fd1.getResult(false, false);
+    Matrix result = fd1.getResult(false);
     assertNotNull(result);
     assertEquals(result.getNumRows(), expectedRows);
-
-    result = fd1.getResult(true, true);
-    assertNotNull(result);
-    assertEquals(result.getNumRows(), k);
 
     println(fd1.toString(true, true, true));
   }
@@ -164,7 +161,7 @@ public class FrequentDirectionsTest {
       fd.update(input);
     }
 
-    Matrix m = fd.getResult(false, false);
+    Matrix m = fd.getResult();
     for (int i = 0; i < k + 1; ++i) {
       assertEquals(m.getElement(i,i), 1.0 * (i + 1), 1e-6);
     }
@@ -172,8 +169,9 @@ public class FrequentDirectionsTest {
     final Matrix p = fd.getProjectionMatrix();
     double[] sv = fd.getSingularValues(false);
 
-    // without compensation, and check projection at the same time
-    m = fd.getResult(true, false);
+    // without compensation, but force rank reduction and check projection at the same time
+    fd.forceReduceRank();
+    m = fd.getResult();
     for (int i = k; i > 1; --i) {
       final double val = Math.abs(m.getElement(k - i, i));
       final double expected = Math.sqrt(((i + 1) * (i + 1)) - fd.getSvAdjustment());
@@ -185,8 +183,8 @@ public class FrequentDirectionsTest {
     assertEquals(p.getElement(k, 1), 0.0);
 
     // with compensation
-    m = fd.getResult(true, true);
-    sv = fd.getSingularValues();
+    m = fd.getResult(true);
+    sv = fd.getSingularValues(true);
     for (int i = k; i > 1; --i) {
       final double val = Math.abs(m.getElement(k - i, i));
       assertEquals(val, i + 1.0, 1e-6);
@@ -232,7 +230,7 @@ public class FrequentDirectionsTest {
     final int d = 20;
     final FrequentDirections fd = FrequentDirections.newInstance(k, d);
 
-    byte[] sketchBytes = fd.toByteArray(false);
+    byte[] sketchBytes = fd.toByteArray();
     assertEquals(sketchBytes.length,
             MatrixFamily.FREQUENTDIRECTIONS.getMinPreLongs() * Long.BYTES);
     Memory mem = Memory.wrap(sketchBytes);
@@ -265,12 +263,11 @@ public class FrequentDirectionsTest {
       fd.update(input);
     }
     assertEquals(fd.getNumRows(), 2 * k - 1);
-    sketchBytes = fd.toByteArray(true);
-    assertEquals(fd.getNumRows(), k);
+    sketchBytes = fd.toByteArray();
     mem = Memory.wrap(sketchBytes);
     rebuilt = FrequentDirections.heapify(mem);
     assertEquals(rebuilt.getN(), fd.getN());
-    assertEquals(rebuilt.getNumRows(), k);
+    assertEquals(rebuilt.getNumRows(), fd.getNumRows());
 
     println(PreambleUtil.preambleToString(mem));
   }
@@ -328,7 +325,6 @@ public class FrequentDirectionsTest {
       // expected
     }
   }
-
 
   private void println(final String msg) {
     //System.out.println(msg);
