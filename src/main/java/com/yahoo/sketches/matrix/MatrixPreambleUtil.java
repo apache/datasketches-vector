@@ -197,9 +197,9 @@ public final class MatrixPreambleUtil {
    */
   static int getAndCheckPreLongs(final Memory mem) {
     final long cap = mem.getCapacity();
-    if (cap < Long.BYTES) { throwNotBigEnough(cap, Long.BYTES); }
-    final int preLongs = extractPreLongs(mem);
-    final int required = Math.max(preLongs << 3, Long.BYTES);
+    if (cap < 8) { throwNotBigEnough(cap, 8); }
+    final int preLongs = mem.getByte(0) & 0x3F;
+    final int required = Math.max(preLongs << 3, 8);
     if (cap < required) { throwNotBigEnough(cap, required); }
     return preLongs;
   }
