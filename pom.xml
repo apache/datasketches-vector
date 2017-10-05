@@ -41,7 +41,7 @@
 
     <contributors>
         <contributor>
-            <url>https://github.com/DataSketches/sketches-core/graphs/contributors</url>
+            <url>https://github.com/DataSketches/sketches-vector/graphs/contributors</url>
         </contributor>
     </contributors>
     <!-- End Project Information -->
@@ -58,12 +58,12 @@
     <!-- Environment Settings -->
     <issueManagement>
         <system>GitHub Issues</system>
-        <url>https://github.com/DataSketches/sketches-core/issues</url>
+        <url>https://github.com/DataSketches/sketches-vector/issues</url>
     </issueManagement>
 
     <ciManagement>
         <system>travis</system>
-        <url>https://travis-ci.org/DataSketches/sketches-core</url>
+        <url>https://travis-ci.org/DataSketches/sketches-vector</url>
     </ciManagement>
 
     <mailingLists>
@@ -77,9 +77,9 @@
     </mailingLists>
 
     <scm>
-        <connection>scm:git:ssh://git@github.com/DataSketches/sketches-core.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/DataSketches/sketches-core.git</developerConnection>
-        <url>https://github.com/DataSketches/sketches-core.git</url>
+        <connection>scm:git:ssh://git@github.com/DataSketches/sketches-vector.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/DataSketches/sketches-vector.git</developerConnection>
+        <url>https://github.com/DataSketches/sketches-vector.git</url>
         <tag>sketches-vector-0.0.1</tag>
     </scm>
 
