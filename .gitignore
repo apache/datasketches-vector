@@ -9,6 +9,9 @@
 *.ipr
 *.iws
 
+# Additional tools
+.clover/
+
 # OSX files
 .DS_Store
 
