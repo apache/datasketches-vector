@@ -4,14 +4,14 @@
  * for terms.
  */
 
-package com.yahoo.sketches.matrix;
+package com.yahoo.sketches.vector.matrix;
 
-import static com.yahoo.sketches.matrix.MatrixPreambleUtil.LS;
+import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.LS;
 
 import org.ojalgo.matrix.store.PrimitiveDenseStore;
 
 import com.yahoo.memory.Memory;
-import com.yahoo.sketches.MatrixFamily;
+import com.yahoo.sketches.vector.MatrixFamily;
 
 
 /**

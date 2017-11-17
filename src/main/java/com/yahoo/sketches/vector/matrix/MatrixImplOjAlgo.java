@@ -4,23 +4,23 @@
  * for terms.
  */
 
-package com.yahoo.sketches.matrix;
+package com.yahoo.sketches.vector.matrix;
 
-import static com.yahoo.sketches.matrix.MatrixPreambleUtil.COMPACT_FLAG_MASK;
-import static com.yahoo.sketches.matrix.MatrixPreambleUtil.extractFamilyID;
-import static com.yahoo.sketches.matrix.MatrixPreambleUtil.extractFlags;
-import static com.yahoo.sketches.matrix.MatrixPreambleUtil.extractNumColumns;
-import static com.yahoo.sketches.matrix.MatrixPreambleUtil.extractNumColumnsUsed;
-import static com.yahoo.sketches.matrix.MatrixPreambleUtil.extractNumRows;
-import static com.yahoo.sketches.matrix.MatrixPreambleUtil.extractNumRowsUsed;
-import static com.yahoo.sketches.matrix.MatrixPreambleUtil.extractPreLongs;
-import static com.yahoo.sketches.matrix.MatrixPreambleUtil.extractSerVer;
+import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.COMPACT_FLAG_MASK;
+import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.extractFamilyID;
+import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.extractFlags;
+import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.extractNumColumns;
+import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.extractNumColumnsUsed;
+import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.extractNumRows;
+import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.extractNumRowsUsed;
+import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.extractPreLongs;
+import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.extractSerVer;
 
 import org.ojalgo.matrix.store.PrimitiveDenseStore;
 
 import com.yahoo.memory.Memory;
 import com.yahoo.memory.WritableMemory;
-import com.yahoo.sketches.MatrixFamily;
+import com.yahoo.sketches.vector.MatrixFamily;
 
 public final class MatrixImplOjAlgo extends Matrix {
   private PrimitiveDenseStore mtx_;

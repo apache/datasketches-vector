@@ -3,12 +3,12 @@
  * Licensed under the terms of the Apache License 2.0. See LICENSE file at the project root for terms.
  */
 
-package com.yahoo.sketches.decomposition;
+package com.yahoo.sketches.vector.decomposition;
 
 import static com.yahoo.memory.UnsafeUtil.unsafe;
 
 import com.yahoo.memory.Memory;
-import com.yahoo.sketches.MatrixFamily;
+import com.yahoo.sketches.vector.MatrixFamily;
 
 /**
  * This class defines the preamble items structure and provides basic utilities for some of the key fields.

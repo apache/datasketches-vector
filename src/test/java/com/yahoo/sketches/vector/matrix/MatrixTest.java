@@ -1,15 +1,21 @@
-package com.yahoo.sketches.matrix;
+/*
+ * Copyright 2017, Yahoo, Inc.
+ * Licensed under the terms of the Apache License 2.0. See LICENSE file at the project root for terms.
+ */
+
+package com.yahoo.sketches.vector.matrix;
 
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
+import org.testng.annotations.Test;
+
 import com.yahoo.memory.Memory;
 import com.yahoo.memory.WritableMemory;
-import com.yahoo.sketches.MatrixFamily;
-import org.testng.annotations.Test;
+import com.yahoo.sketches.vector.MatrixFamily;
 
 public class MatrixTest {
 

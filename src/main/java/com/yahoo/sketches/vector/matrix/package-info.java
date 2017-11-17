@@ -11,4 +11,4 @@
  *
  * <p>These Matrix objects can be serialized and deserialized to/from a compact form.</p>
  */
-package com.yahoo.sketches.matrix;
+package com.yahoo.sketches.vector.matrix;

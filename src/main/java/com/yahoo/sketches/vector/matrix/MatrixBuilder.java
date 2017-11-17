@@ -4,7 +4,7 @@
  * for terms.
  */
 
-package com.yahoo.sketches.matrix;
+package com.yahoo.sketches.vector.matrix;
 
 /**
  * Provides a builder for Matrix objects.

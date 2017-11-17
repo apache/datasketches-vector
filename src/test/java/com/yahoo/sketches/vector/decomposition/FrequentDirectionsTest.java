@@ -1,4 +1,9 @@
-package com.yahoo.sketches.decomposition;
+/*
+ * Copyright 2017, Yahoo, Inc.
+ * Licensed under the terms of the Apache License 2.0. See LICENSE file at the project root for terms.
+ */
+
+package com.yahoo.sketches.vector.decomposition;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
@@ -8,11 +13,12 @@ import static org.testng.Assert.fail;
 
 import java.util.Arrays;
 
+import org.testng.annotations.Test;
+
 import com.yahoo.memory.Memory;
 import com.yahoo.memory.WritableMemory;
-import com.yahoo.sketches.MatrixFamily;
-import com.yahoo.sketches.matrix.Matrix;
-import org.testng.annotations.Test;
+import com.yahoo.sketches.vector.MatrixFamily;
+import com.yahoo.sketches.vector.matrix.Matrix;
 
 public class FrequentDirectionsTest {
   @Test
@@ -138,7 +144,7 @@ public class FrequentDirectionsTest {
     assertEquals(fd1.getNumRows(), expectedRows);
     assertEquals(fd1.getN(), 2 * initialRows);
 
-    Matrix result = fd1.getResult(false);
+    final Matrix result = fd1.getResult(false);
     assertNotNull(result);
     assertEquals(result.getNumRows(), expectedRows);
 
@@ -280,7 +286,7 @@ public class FrequentDirectionsTest {
     byte[] sketchBytes = fd.toByteArray();
     WritableMemory mem = WritableMemory.wrap(sketchBytes);
 
-    FrequentDirections rebuilt = FrequentDirections.heapify(mem);
+    final FrequentDirections rebuilt = FrequentDirections.heapify(mem);
     assertTrue(rebuilt.isEmpty());
     println(PreambleUtil.preambleToString(mem));
 

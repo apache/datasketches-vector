@@ -1,26 +1,31 @@
-package com.yahoo.sketches.decomposition;
+/*
+ * Copyright 2017, Yahoo, Inc.
+ * Licensed under the terms of the Apache License 2.0. See LICENSE file at the project root for terms.
+ */
+
+package com.yahoo.sketches.vector.decomposition;
 
 import static com.yahoo.memory.UnsafeUtil.LS;
-import static com.yahoo.sketches.decomposition.PreambleUtil.EMPTY_FLAG_MASK;
-import static com.yahoo.sketches.decomposition.PreambleUtil.SER_VER;
-import static com.yahoo.sketches.decomposition.PreambleUtil.extractFamilyID;
-import static com.yahoo.sketches.decomposition.PreambleUtil.extractFlags;
-import static com.yahoo.sketches.decomposition.PreambleUtil.extractK;
-import static com.yahoo.sketches.decomposition.PreambleUtil.extractN;
-import static com.yahoo.sketches.decomposition.PreambleUtil.extractNumColumns;
-import static com.yahoo.sketches.decomposition.PreambleUtil.extractNumRows;
-import static com.yahoo.sketches.decomposition.PreambleUtil.extractSVAdjustment;
-import static com.yahoo.sketches.decomposition.PreambleUtil.extractSerVer;
-import static com.yahoo.sketches.decomposition.PreambleUtil.getAndCheckPreLongs;
-import static com.yahoo.sketches.decomposition.PreambleUtil.insertFamilyID;
-import static com.yahoo.sketches.decomposition.PreambleUtil.insertFlags;
-import static com.yahoo.sketches.decomposition.PreambleUtil.insertK;
-import static com.yahoo.sketches.decomposition.PreambleUtil.insertN;
-import static com.yahoo.sketches.decomposition.PreambleUtil.insertNumColumns;
-import static com.yahoo.sketches.decomposition.PreambleUtil.insertNumRows;
-import static com.yahoo.sketches.decomposition.PreambleUtil.insertPreLongs;
-import static com.yahoo.sketches.decomposition.PreambleUtil.insertSVAdjustment;
-import static com.yahoo.sketches.decomposition.PreambleUtil.insertSerVer;
+import static com.yahoo.sketches.vector.decomposition.PreambleUtil.EMPTY_FLAG_MASK;
+import static com.yahoo.sketches.vector.decomposition.PreambleUtil.SER_VER;
+import static com.yahoo.sketches.vector.decomposition.PreambleUtil.extractFamilyID;
+import static com.yahoo.sketches.vector.decomposition.PreambleUtil.extractFlags;
+import static com.yahoo.sketches.vector.decomposition.PreambleUtil.extractK;
+import static com.yahoo.sketches.vector.decomposition.PreambleUtil.extractN;
+import static com.yahoo.sketches.vector.decomposition.PreambleUtil.extractNumColumns;
+import static com.yahoo.sketches.vector.decomposition.PreambleUtil.extractNumRows;
+import static com.yahoo.sketches.vector.decomposition.PreambleUtil.extractSVAdjustment;
+import static com.yahoo.sketches.vector.decomposition.PreambleUtil.extractSerVer;
+import static com.yahoo.sketches.vector.decomposition.PreambleUtil.getAndCheckPreLongs;
+import static com.yahoo.sketches.vector.decomposition.PreambleUtil.insertFamilyID;
+import static com.yahoo.sketches.vector.decomposition.PreambleUtil.insertFlags;
+import static com.yahoo.sketches.vector.decomposition.PreambleUtil.insertK;
+import static com.yahoo.sketches.vector.decomposition.PreambleUtil.insertN;
+import static com.yahoo.sketches.vector.decomposition.PreambleUtil.insertNumColumns;
+import static com.yahoo.sketches.vector.decomposition.PreambleUtil.insertNumRows;
+import static com.yahoo.sketches.vector.decomposition.PreambleUtil.insertPreLongs;
+import static com.yahoo.sketches.vector.decomposition.PreambleUtil.insertSVAdjustment;
+import static com.yahoo.sketches.vector.decomposition.PreambleUtil.insertSerVer;
 
 import org.ojalgo.array.Array1D;
 import org.ojalgo.matrix.decomposition.SingularValue;
@@ -30,9 +35,9 @@ import org.ojalgo.matrix.store.SparseStore;
 
 import com.yahoo.memory.Memory;
 import com.yahoo.memory.WritableMemory;
-import com.yahoo.sketches.MatrixFamily;
-import com.yahoo.sketches.matrix.Matrix;
-import com.yahoo.sketches.matrix.MatrixBuilder;
+import com.yahoo.sketches.vector.MatrixFamily;
+import com.yahoo.sketches.vector.matrix.Matrix;
+import com.yahoo.sketches.vector.matrix.MatrixBuilder;
 
 /**
  * This class implements the Frequent Directions algorithm proposed by Edo Liberty in "Simple and

@@ -4,7 +4,7 @@
  * for terms.
  */
 
-package com.yahoo.sketches.matrix;
+package com.yahoo.sketches.vector.matrix;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
@@ -17,14 +17,14 @@ public class MatrixBuilderTest {
     final MatrixBuilder builder = new MatrixBuilder();
     assertEquals(builder.getBackingType(), MatrixBuilder.Algo.OJALGO); // default type
 
-    Matrix m = builder.build(128, 512);
+    final Matrix m = builder.build(128, 512);
     assertNotNull(m);
   }
 
   @Test
   public void checkSetType() {
     final MatrixBuilder builder = new MatrixBuilder();
-    MatrixBuilder.Algo type = builder.getBackingType();
+    final MatrixBuilder.Algo type = builder.getBackingType();
     assertEquals(type, MatrixBuilder.Algo.OJALGO); // default type
     assertEquals(type.getId(), MatrixBuilder.Algo.OJALGO.getId());
     assertEquals(type.getName(), MatrixBuilder.Algo.OJALGO.getName());

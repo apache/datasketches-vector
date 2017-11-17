@@ -1,12 +1,18 @@
-package com.yahoo.sketches.matrix;
+/*
+ * Copyright 2017, Yahoo, Inc.
+ * Licensed under the terms of the Apache License 2.0. See LICENSE file at the project root for terms.
+ */
+
+package com.yahoo.sketches.vector.matrix;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.fail;
 
-import com.yahoo.memory.Memory;
-import com.yahoo.memory.WritableMemory;
 import org.ojalgo.matrix.store.PrimitiveDenseStore;
 import org.testng.annotations.Test;
+
+import com.yahoo.memory.Memory;
+import com.yahoo.memory.WritableMemory;
 
 public class MatrixImplOjAlgoTest {
   @Test
@@ -34,7 +40,7 @@ public class MatrixImplOjAlgoTest {
 
     for (int i = 0; i < nRows; ++i) {
       for (int j = 0; j < nCols; ++j) {
-        double val = m.getElement(i, j);
+        final double val = m.getElement(i, j);
         if (i == j) {
           assertEquals(val, i + 1.0);
         } else {
