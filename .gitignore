@@ -15,8 +15,9 @@
 # OSX files
 .DS_Store
 
-# Compiled class file
+# Compiler output, class files
 *.class
+bin/
 
 # Log file
 *.log
@@ -37,3 +38,29 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+
+#Test config and output
+/target/
+test-output/
+local/
+reports/
+.pmd
+tmp/
+
+# Build artifacts
+out/
+build/
+jarsIn/
+build.xml
+.idea
+*.properties
+*.releaseBackup
+*.next
+*.tag
+
+# Jekyll
+Gemfile
+Gemfile.lock
+_site/
+_*
+_*/

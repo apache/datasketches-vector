@@ -37,6 +37,7 @@ import com.yahoo.sketches.vector.MatrixFamily;
  *
  * @author Jon Malkin
  */
+@SuppressWarnings("restriction")
 public final class MatrixPreambleUtil {
 
   /**

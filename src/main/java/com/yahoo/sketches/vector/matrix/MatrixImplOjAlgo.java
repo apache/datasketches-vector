@@ -88,6 +88,7 @@ public final class MatrixImplOjAlgo extends Matrix {
     return new MatrixImplOjAlgo(mtx);
   }
 
+  @Override
   public Object getRawObject() {
     return mtx_;
   }
@@ -96,7 +97,7 @@ public final class MatrixImplOjAlgo extends Matrix {
   public byte[] toByteArray() {
     final int preLongs = 2;
     final long numElements = mtx_.count();
-    assert numElements == mtx_.countColumns() * mtx_.countRows();
+    assert numElements == (mtx_.countColumns() * mtx_.countRows());
 
     final int outBytes = (int) ((preLongs * Long.BYTES) + (numElements * Double.BYTES));
     final byte[] outByteArr = new byte[outBytes];

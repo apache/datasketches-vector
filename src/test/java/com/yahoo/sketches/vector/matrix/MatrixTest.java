@@ -75,15 +75,15 @@ public class MatrixTest {
 
     // matrix subsets
     expectedSize = (MatrixFamily.MATRIX.getMaxPreLongs() * Long.BYTES)
-            + (5 * 3) * Double.BYTES;
+            + ((5 * 3) * Double.BYTES);
     assertEquals(m.getCompactSizeBytes(5, 3), expectedSize);
 
     expectedSize = (MatrixFamily.MATRIX.getMaxPreLongs() * Long.BYTES)
-            + (7 * 2) * Double.BYTES;
+            + ((7 * 2) * Double.BYTES);
     assertEquals(m.getCompactSizeBytes(7, 2), expectedSize);
 
     expectedSize = (MatrixFamily.MATRIX.getMaxPreLongs() * Long.BYTES)
-            + (2 * 2) * Double.BYTES;
+            + ((2 * 2) * Double.BYTES);
     assertEquals(m.getCompactSizeBytes(2, 2), expectedSize);
   }
 
@@ -158,6 +158,10 @@ public class MatrixTest {
     }
   }
 
+  /**
+   * println the message
+   * @param msg the message
+   */
   static void println(final String msg) {
     //System.out.println(msg);
   }

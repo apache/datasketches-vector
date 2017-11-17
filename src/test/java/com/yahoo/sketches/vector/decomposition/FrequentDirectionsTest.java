@@ -68,7 +68,7 @@ public class FrequentDirectionsTest {
 
     // creates matrix with increasing values along diagonal
     final double[] input = new double[d];
-    for (int i = 0; i < 2 * k; ++i) {
+    for (int i = 0; i < (2 * k); ++i) {
       if (i > 0) {
         input[i - 1] = 0.0;
       }
@@ -159,7 +159,7 @@ public class FrequentDirectionsTest {
 
     // diagonal matrix for easy checking
     final double[] input = new double[d];
-    for (int i = 0; i < k + 1; ++i) {
+    for (int i = 0; i < (k + 1); ++i) {
       if (i > 0) {
         input[i - 1] = 0.0;
       }
@@ -168,7 +168,7 @@ public class FrequentDirectionsTest {
     }
 
     Matrix m = fd.getResult();
-    for (int i = 0; i < k + 1; ++i) {
+    for (int i = 0; i < (k + 1); ++i) {
       assertEquals(m.getElement(i,i), 1.0 * (i + 1), 1e-6);
     }
 
@@ -264,11 +264,11 @@ public class FrequentDirectionsTest {
     assertEquals(rebuilt.getK(), fd.getK());
 
     // add another k rows and serialize, compressing this time
-    for (int i = k; i < 2 * k - 1; ++i) {
+    for (int i = k; i < ((2 * k) - 1); ++i) {
       input[i] = i * 1.0;
       fd.update(input);
     }
-    assertEquals(fd.getNumRows(), 2 * k - 1);
+    assertEquals(fd.getNumRows(), (2 * k) - 1);
     sketchBytes = fd.toByteArray();
     mem = Memory.wrap(sketchBytes);
     rebuilt = FrequentDirections.heapify(mem);
@@ -332,6 +332,10 @@ public class FrequentDirectionsTest {
     }
   }
 
+/**
+ * println the message
+ * @param msg the message
+ */
   private void println(final String msg) {
     //System.out.println(msg);
   }
