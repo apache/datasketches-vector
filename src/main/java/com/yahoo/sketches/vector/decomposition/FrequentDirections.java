@@ -354,6 +354,7 @@ public final class FrequentDirections {
   public void reset() {
     n_ = 0;
     nextZeroRow_ = 0;
+    svAdjustment_ = 0.0;
   }
 
   /**
