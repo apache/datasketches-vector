@@ -21,16 +21,16 @@ public class MatrixTest {
 
   @Test
   public void checkHeapify() {
-    final Matrix m = Matrix.builder().setType(MatrixBuilder.Algo.OJALGO).build(3, 3);
+    final Matrix m = Matrix.builder().setType(MatrixType.OJALGO).build(3, 3);
     final byte[] bytes = m.toByteArray();
     final Memory mem = Memory.wrap(bytes);
     println(MatrixPreambleUtil.preambleToString(mem));
 
-    Matrix tgt = Matrix.heapify(mem, MatrixBuilder.Algo.OJALGO);
+    Matrix tgt = Matrix.heapify(mem, MatrixType.OJALGO);
     assertTrue(tgt instanceof MatrixImplOjAlgo);
     checkMatrixEquality(m, tgt);
 
-    tgt = Matrix.heapify(mem, MatrixBuilder.Algo.NATIVE);
+    tgt = Matrix.heapify(mem, MatrixType.NATIVE);
     assertNull(tgt);
   }
 
@@ -38,7 +38,7 @@ public class MatrixTest {
   public void checkWrap() {
     assertNull(Matrix.wrap(null));
 
-    final Matrix src = Matrix.builder().setType(MatrixBuilder.Algo.OJALGO).build(3, 3);
+    final Matrix src = Matrix.builder().setType(MatrixType.OJALGO).build(3, 3);
     final Object obj = src.getRawObject();
     final Matrix tgt = Matrix.wrap(obj);
     assertTrue(tgt instanceof MatrixImplOjAlgo);
