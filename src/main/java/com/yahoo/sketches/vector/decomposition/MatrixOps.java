@@ -13,7 +13,7 @@ import com.yahoo.sketches.vector.matrix.Matrix;
 public abstract class MatrixOps {
 
   // number of iterations for SISVD
-  static final int DEFAULT_NUM_ITER = 8;
+  static final int DEFAULT_NUM_ITER = 200;
 
   /**
    * Matrix dimensions

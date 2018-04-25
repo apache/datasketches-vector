@@ -6,6 +6,7 @@ package com.yahoo.sketches.vector.decomposition;
 
 import java.util.concurrent.ThreadLocalRandom;
 
+import com.github.fommil.netlib.BLAS;
 import org.netlib.util.intW;
 
 import com.github.fommil.netlib.LAPACK;
@@ -76,6 +77,7 @@ public class MatrixOpsImplMTJ extends MatrixOps {
 
     if (computeVectors && Vt_ == null) {
       Vt_ = new DenseMatrix(n_, d_);
+      //Vt_ = new DenseMatrix(k_, d_);
 
       final int[] diag = {0}; // only need the main diagonal
       S_ = new CompDiagMatrix(n_, n_, diag);
@@ -213,7 +215,7 @@ public class MatrixOpsImplMTJ extends MatrixOps {
   private void allocateSpaceSISVD() {
     block_ = new DenseMatrix(d_, k_);
     T_ = new DenseMatrix(n_, k_);
-    // TODO: should allocate space for QR and final SVD here
+    // TODO: should allocate space for QR and final SVD here?
   }
 
   private MatrixOps computeFullSVD(final DenseMatrix A, final boolean computeVectors) {
@@ -247,20 +249,20 @@ public class MatrixOpsImplMTJ extends MatrixOps {
     for (MatrixEntry entry : block_) {
       entry.set(rand.nextGaussian());
     }
-    // TODO: in-line QR
+    // TODO: in-line QR with direct LAPACK call
     final QR qr = new QR(block_.numRows(), block_.numColumns());
-    block_ = qr.factor(A).getQ(); // important for numeric stability
+    block_ = qr.factor(block_).getQ(); // important for numeric stability
 
     for (int i = 0; i < DEFAULT_NUM_ITER; ++i) {
       A.mult(block_, T_);
-      A.transABmult(T_, block_);
+      A.transAmult(T_, block_);
       block_ = qr.factor(block_).getQ(); // again, for stability
     }
 
     // Rayleigh-Ritz postprocessing
     A.mult(block_, T_);
 
-    // TODO: use full SVD code
+    // TODO: use LAPACK directly
     final SVD svd = new SVD(T_.numRows(), T_.numColumns(), computeVectors);
     try {
       svd.factor(T_);
@@ -270,7 +272,11 @@ public class MatrixOpsImplMTJ extends MatrixOps {
     System.arraycopy(svd.getS(), 0, sv_, 0, svd.getS().length); // sv_ is final
 
     if (computeVectors) {
-      block_.mult(svd.getVt(), Vt_);
+      // V^T = (block * V^T)^T = (V^T)^T * block^T
+      // using BLAS directly since Vt is (n_ x d_) but result here is only (k_ x d_)
+      BLAS.getInstance().dgemm("T", "T", k_, d_, k_,
+              1.0, svd.getVt().getData(), k_, block_.getData(), d_,
+              0.0, Vt_.getData(), n_);
     }
 
     return this;

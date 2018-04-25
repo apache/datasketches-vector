@@ -521,7 +521,7 @@ public final class FrequentDirections {
       for (int i = k_ - 1; i < S_.countColumns(); ++i) {
         S_.set(i, i, 0.0);
       }
-      nextZeroRow_ = k_;
+      nextZeroRow_ = k_ - 1;
     } else {
       for (int i = 0; i < sv_.length; ++i) {
         S_.set(i, i, sv_[i]);

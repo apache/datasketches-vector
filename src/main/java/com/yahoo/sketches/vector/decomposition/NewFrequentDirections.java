@@ -517,8 +517,9 @@ public final class NewFrequentDirections {
 
     final double newSvAdjustment = svd_.reduceRank(B_);
     svAdjustment_ += newSvAdjustment;
-    nextZeroRow_ = (int) Math.min(k_, n_); //svd_.getSingularValues().length;
+    nextZeroRow_ = k_ - 1; //(int) Math.min(k_, n_); //svd_.getSingularValues().length;
 
     //System.out.println(toString(true, true, false));
+    //System.exit(0);
   }
 }

@@ -172,7 +172,9 @@ public class MatrixOpsImplOjAlgo extends MatrixOps {
     svd.getSingularValues(sv_);
 
     if (computeVectors) {
-      block_.multiply(svd.getQ2().transpose()).supplyTo(Vt_);
+      // V = block * Q2^T so V^T = Q2 * block^T
+      // and ojAlgo figures out that it only needs to fill the first k_ rows of Vt_
+      svd.getQ2().multiply(block_.transpose()).supplyTo(Vt_);
     }
 
     return this;
