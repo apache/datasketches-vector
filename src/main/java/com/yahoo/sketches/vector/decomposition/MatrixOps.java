@@ -1,10 +1,10 @@
 /* Directly derived from LGPL'd Matrix Toolkit for Java:
  * https://github.com/fommil/matrix-toolkits-java/blob/master/src/main/java/no/uib/cipr/matrix/SVD.java
  */
+
 package com.yahoo.sketches.vector.decomposition;
 
 import com.yahoo.sketches.vector.matrix.Matrix;
-import com.yahoo.sketches.vector.matrix.MatrixImplMTJ;
 
 /**
  * Computes singular value decompositions and related Matrix operations needed by Frequent Directions. May return as
@@ -12,44 +12,103 @@ import com.yahoo.sketches.vector.matrix.MatrixImplMTJ;
  */
 public abstract class MatrixOps {
 
+  // number of iterations for SISVD
+  static final int DEFAULT_NUM_ITER = 8;
+
+  /**
+   * Matrix dimensions
+   */
+  final int n_; // rows
+  final int d_; // columns
+
+  /**
+   * Target number of dimensions
+   */
+  final int k_;
+
+  /**
+   * Singular value decomposition method to use
+   */
+  final SVDAlgo algo_;
+
   /**
    * Creates an empty MatrixOps object to support Frequent Directions matrix operations
    *
    * @param A Matrix of the required type and correct dimensions
    * @param algo Enum indicating method to use for SVD
    * @param k Target number of dimensions for results
+   * @return an empty MatrixOps object
    */
   public static MatrixOps newInstance(final Matrix A, final SVDAlgo algo, final int k) {
+    final int n = (int) A.getNumRows();
+    final int d = (int) A.getNumColumns();
+
     switch (A.getMatrixType()) {
-      //case OJALGO:
-      //  return new MatrixOpsImplOjAlgo(A, algo, k);
+      case OJALGO:
+        //return new MatrixOpsImplOjAlgo(A, algo, k);
+        return new MatrixOpsImplOjAlgo(n, d, algo, k);
 
       case MTJ:
-        return new MatrixOpsImplMTJ((MatrixImplMTJ) A, algo, k);
+        //return new MatrixOpsImplMTJ((MatrixImplMTJ) A, algo, k);
+        return new MatrixOpsImplMTJ(n, d, algo, k);
     }
 
     throw new IllegalArgumentException("Unknown MatrixType: " + A.getMatrixType().toString());
   }
 
-  /**
-   * Returns the singular values (stored in descending order). Does not compute singular vectors.
-   * @param sv Target vector to hold singular values
-   */
-  public abstract void getSingularValues(final double[] sv);
+  MatrixOps(final int n, final int d, final SVDAlgo algo, final int k) {
+    // TODO: make these actual checks
+    assert n > 0;
+    assert d > 0;
+    assert n < d;
+    assert k > 0;
+    assert k < n;
+
+    n_ = n;
+    d_ = d;
+    algo_ = algo;
+    k_ = k;
+  }
 
   /**
-   * Returns the right singular vectors (row-wise?)
-   *
-   * @return Matrix of size k x k
+   * Computes and returns the singular values, in descending order.
+   * @param A Matrix to decompose
+   * @return Array of singular values
    */
-  public abstract Matrix getVt();
+  public double[] getSingularValues(final Matrix A) {
+    svd(A, false);
+    return getSingularValues();
+  }
+
+  /**
+   * Returns pre-computed singular values (stored in descending order). Does not perform new computation.
+   * @return Singular values from the last computation
+   */
+  abstract double[] getSingularValues();
+
+  /**
+   * Computes and returns the right singular vectors of A.
+   * @param A Matrix to decompose
+   * @return Matrix of size d x k
+   */
+  public Matrix getVt(final Matrix A) {
+    svd(A, true);
+    return Matrix.wrap(getVt());
+  }
+
+  /**
+   * Returns pre-computed right singular vectors (row-wise?). Does not perform new computation.
+   *
+   * @return Matrix of size d x k
+   */
+  abstract Matrix getVt();
 
   /**
    * Performs a Frequent Directions rank reduction with the SVDAlgo used when obtaining the instance. Modifies internal
    * state, with results queried via getVt() and getSingularValues().
    * @return The amount of weight subtracted from the singular values
    */
-  public abstract double reduceRank(final Matrix A);
+  abstract double reduceRank(final Matrix A);
 
   /**
    * Returns Matrix object reconstructed using the provided singular value adjustment. Requires first decomposing the

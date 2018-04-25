@@ -26,12 +26,12 @@ public class MatrixTest {
     final Memory mem = Memory.wrap(bytes);
     println(MatrixPreambleUtil.preambleToString(mem));
 
-    Matrix tgt = Matrix.heapify(mem, MatrixType.OJALGO);
+    final Matrix tgt = Matrix.heapify(mem, MatrixType.OJALGO);
     assertTrue(tgt instanceof MatrixImplOjAlgo);
     checkMatrixEquality(m, tgt);
 
-    tgt = Matrix.heapify(mem, MatrixType.NATIVE);
-    assertNull(tgt);
+    //tgt = Matrix.heapify(mem, MatrixType.NATIVE);
+    //assertNull(tgt);
   }
 
   @Test

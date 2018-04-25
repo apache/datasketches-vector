@@ -503,6 +503,8 @@ public final class FrequentDirections {
   double getSvAdjustment() { return svAdjustment_; }
 
   private void reduceRank() {
+    //System.out.println(toString(true, true, false));
+
     final SingularValue<Double> svd = SingularValue.make(B_);
     svd.compute(B_);
     svd.getSingularValues(sv_);
@@ -532,5 +534,7 @@ public final class FrequentDirections {
     }
 
     S_.multiply(svd.getQ2().transpose()).supplyTo(B_);
+
+    //System.out.println(toString(true, true, false));
   }
 }

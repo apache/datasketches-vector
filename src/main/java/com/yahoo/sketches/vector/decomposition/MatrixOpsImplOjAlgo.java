@@ -1,99 +1,180 @@
 package com.yahoo.sketches.vector.decomposition;
 
-import com.yahoo.sketches.vector.matrix.Matrix;
+import com.yahoo.sketches.vector.matrix.MatrixImplOjAlgo;
 import org.ojalgo.matrix.decomposition.QR;
 import org.ojalgo.matrix.decomposition.SingularValue;
 import org.ojalgo.matrix.store.MatrixStore;
 import org.ojalgo.matrix.store.PrimitiveDenseStore;
+import org.ojalgo.matrix.store.SparseStore;
 import org.ojalgo.random.Normal;
 
+import com.yahoo.sketches.vector.matrix.Matrix;
+import com.yahoo.sketches.vector.matrix.MatrixType;
+
 public class MatrixOpsImplOjAlgo extends MatrixOps {
-  private static final int DEFAULT_NUM_ITER = 8;
-
-  private long nIter_;
-
   //private SingularValue<Double> svd;
   private double[] sv_;
-  private MatrixStore<Double> Vt_;
+  private PrimitiveDenseStore Vt_;
 
-  MatrixOpsImplOjAlgo(final Matrix A, final SVDAlgo algo) {
-    super();
+  // work objects for SISVD
+  private PrimitiveDenseStore block_;
+  private PrimitiveDenseStore T_;
+  private QR<Double> qr_;
+
+  transient private SparseStore<Double> S_; // to hold singular value matrix
+
+  MatrixOpsImplOjAlgo(final int n, final int d, final SVDAlgo algo, final int k) {
+    super(n, d, algo, k);
+
+    // Allocate space for the decomposition
+    sv_ = new double[Math.min(n_, d_)];
+    Vt_ = null; // lazy allocation
   }
 
-  public static MatrixOpsImplOjAlgo(final MatrixStore<Double> A) {
-    return make(A, DEFAULT_NUM_ITER);
-    //return make(A, Math.min(A.countColumns(), A.countRows()) / 2);
-  }
+  @Override
+  MatrixOps svd(final Matrix A, final boolean computeVectors) {
+    assert A.getMatrixType() == MatrixType.OJALGO;
 
-  public static MatrixOpsImplOjAlgo make(final MatrixStore<Double> A, final long numIter) {
-    return new MatrixOpsImplOjAlgo(numIter);
-  }
-
-  //public MatrixStore<Double> getVt() {
-  public Matrix getVt() {
-    return Matrix.wrap(Vt_);
-  }
-
-  public void getSingularValues(final double[] values) {
-    System.arraycopy(sv_, 0, values, 0, sv_.length);
-  }
-
-  @SuppressWarnings("unchecked")
-  void computeFullSVD(final Matrix A, final int k) {
-    final MatrixStore<Double> mtx = (MatrixStore<Double) A.getRawObject();
-    final SingularValue<Double> svd = SingularValue.make(mtx);
-    svd.compute(mtx);
-
-    svd.getSingularValues(sv_);
-    svd.getQ2().transpose().supplyTo(Vt_);
-  }
-
-  @SuppressWarnings("unchecked")
-  void computeSISVD(final Matrix A, final int k) {
-    if (k < 1) {
-      throw new IllegalArgumentException("k must be a positive integer, found: " + k);
+    if (A.getNumRows() != n_) {
+      throw new IllegalArgumentException("A.numRows() != n_");
+    } else if (A.getNumColumns() != d_) {
+      throw new IllegalArgumentException("A.numColumns() != d_");
     }
 
+    if (computeVectors && Vt_ == null) {
+      //Vt_ = PrimitiveDenseStore.FACTORY.makeZero(k_, d_);
+      Vt_ = PrimitiveDenseStore.FACTORY.makeZero(n_, d_);
+      S_ = SparseStore.makePrimitive(sv_.length, sv_.length);
+    }
+
+    switch (algo_) {
+      case FULL:
+        return computeFullSVD((PrimitiveDenseStore) A.getRawObject(), computeVectors);
+
+      case SISVD:
+        return computeSISVD((PrimitiveDenseStore) A.getRawObject(), computeVectors);
+
+      case SYM:
+      default:
+        throw new RuntimeException("SVDAlgo type not (yet?) supported: " + algo_.toString());
+    }
+  }
+
+  @Override
+  double[] getSingularValues() {
+    return sv_;
+  }
+
+  @Override
+  Matrix getVt() {
+    return MatrixImplOjAlgo.wrap(Vt_);
+  }
+
+  @Override
+  double reduceRank(final Matrix A) {
+    svd(A, true);
+
+    double svAdjustment = 0.0;
+
+    if (sv_.length >= k_) {
+      double medianSVSq = sv_[k_ - 1]; // (l_/2)th item, not yet squared
+      medianSVSq *= medianSVSq;
+      svAdjustment += medianSVSq; // always track, even if not using compensative mode
+      for (int i = 0; i < k_ - 1; ++i) {
+        final double val = sv_[i];
+        final double adjSqSV = val * val - medianSVSq;
+        S_.set(i, i, adjSqSV < 0 ? 0.0 : Math.sqrt(adjSqSV));
+      }
+      for (int i = k_ - 1; i < S_.countColumns(); ++i) {
+        S_.set(i, i, 0.0);
+      }
+      //nextZeroRow_ = k_;
+    } else {
+      for (int i = 0; i < sv_.length; ++i) {
+        S_.set(i, i, sv_[i]);
+      }
+      for (int i = sv_.length; i < S_.countColumns(); ++i) {
+        S_.set(i, i, 0.0);
+      }
+      //nextZeroRow_ = sv_.length;
+      throw new RuntimeException("Running with d < 2k not yet supported");
+    }
+
+    // store the result back in A
+    S_.multiply(Vt_).supplyTo((PrimitiveDenseStore) A.getRawObject());
+
+    return svAdjustment;
+  }
+
+  @Override
+  Matrix applyAdjustment(final Matrix A, final double svAdjustment) {
+    // copy A before decomposing
+    final PrimitiveDenseStore result = PrimitiveDenseStore.FACTORY.copy((PrimitiveDenseStore) A.getRawObject());
+    svd(Matrix.wrap(result), true);
+
+    for (int i = 0; i < k_ - 1; ++i) {
+      final double val = sv_[i];
+      final double adjSV = Math.sqrt(val * val + svAdjustment);
+      S_.set(i, i, adjSV);
+    }
+    for (int i = k_ - 1; i < S_.countColumns(); ++i) {
+      S_.set(i, i, 0.0);
+    }
+
+    S_.multiply(Vt_).supplyTo(result);
+
+    return Matrix.wrap(result);
+  }
+
+  private MatrixOps computeFullSVD(final MatrixStore<Double> A, final boolean computeVectors) {
+    final SingularValue<Double> svd = SingularValue.make(A);
+    svd.compute(A);
+
+    svd.getSingularValues(sv_);
+
+    if (computeVectors) {
+      svd.getQ2().transpose().supplyTo(Vt_);
+    }
+
+    return this;
+  }
+
+  private MatrixOps computeSISVD(final MatrixStore<Double> A, final boolean computeVectors) {
     // want to iterate on smaller dimension of A (n x d)
     // currently, error in constructor if d < n, so n is always the smaller dimension
-    final MatrixStore<Double> mtx = (MatrixStore<Double) A.getRawObject();
-
-    final long d = mtx.countColumns();
-    final long n = mtx.countRows();
-    final PrimitiveDenseStore block = PrimitiveDenseStore.FACTORY.makeFilled(d, k, new Normal(0.0, 1.0));
+    if (block_ == null) {
+      block_ = PrimitiveDenseStore.FACTORY.makeFilled(d_, k_, new Normal(0.0, 1.0));
+      qr_ = QR.PRIMITIVE.make(block_);
+      T_ = PrimitiveDenseStore.FACTORY.makeZero(n_, k_);
+    } else {
+      block_.fillAll(new Normal(0.0, 1.0));
+    }
 
     // orthogonalize for numeric stability
-    final QR<Double> qr = QR.PRIMITIVE.make(block);
-    qr.decompose(block);
-    qr.getQ().supplyTo(block);
+    qr_.decompose(block_);
+    qr_.getQ().supplyTo(block_);
 
-    final PrimitiveDenseStore T = PrimitiveDenseStore.FACTORY.makeZero(n, k);
-
-    for (int i = 0; i < nIter_; ++i) {
-      mtx.multiply(block).supplyTo(T);
-      mtx.transpose().multiply(T).supplyTo(block);
+    for (int i = 0; i < DEFAULT_NUM_ITER; ++i) {
+      A.multiply(block_).supplyTo(T_);
+      A.transpose().multiply(T_).supplyTo(block_);
 
       // again, just for stability
-      qr.decompose(block);
-      qr.getQ().supplyTo(block);
+      qr_.decompose(block_);
+      qr_.getQ().supplyTo(block_);
     }
 
     // Rayleigh-Ritz postprocessing
-    mtx.multiply(block).supplyTo(T);
+    A.multiply(block_).supplyTo(T_);
 
-    final SingularValue<Double> svd = SingularValue.make(T);
-    svd.compute(T);
+    final SingularValue<Double> svd = SingularValue.make(T_);
+    svd.compute(T_);
 
-    sv_ = new double[k];
     svd.getSingularValues(sv_);
 
-    //block.multiply(svd.getQ2().transpose()).supplyTo(block);
-    Vt_ = block.multiply(svd.getQ2()).transpose();
+    if (computeVectors) {
+      block_.multiply(svd.getQ2().transpose()).supplyTo(Vt_);
+    }
+
+    return this;
   }
-
-  @SuppressWarnings("unchecked")
-  void computeSymmetrizedSVD(final Matrix A, final int k) {
-
-  }
-
 }

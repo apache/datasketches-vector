@@ -29,9 +29,9 @@ public class MatrixBuilderTest {
     assertEquals(type.getId(), MatrixType.OJALGO.getId());
     assertEquals(type.getName(), MatrixType.OJALGO.getName());
 
-    builder.setType(MatrixType.NATIVE);
-    assertEquals(builder.getBackingType(), MatrixType.NATIVE);
-    assertEquals(builder.getBackingType().toString(), "native");
+    builder.setType(MatrixType.MTJ);
+    assertEquals(builder.getBackingType(), MatrixType.MTJ);
+    assertEquals(builder.getBackingType().toString(), "MTJ");
 
     try {
       builder.build(10, 20);
