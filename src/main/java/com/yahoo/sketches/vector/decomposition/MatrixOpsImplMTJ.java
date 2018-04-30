@@ -6,9 +6,9 @@ package com.yahoo.sketches.vector.decomposition;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-import com.github.fommil.netlib.BLAS;
 import org.netlib.util.intW;
 
+import com.github.fommil.netlib.BLAS;
 import com.github.fommil.netlib.LAPACK;
 import com.yahoo.sketches.vector.matrix.Matrix;
 import com.yahoo.sketches.vector.matrix.MatrixImplMTJ;
@@ -23,7 +23,7 @@ import no.uib.cipr.matrix.sparse.CompDiagMatrix;
 /**
  * Computes singular value decompositions
  */
-public class MatrixOpsImplMTJ extends MatrixOps {
+class MatrixOpsImplMTJ extends MatrixOps {
 
   /**
    * The singular values
@@ -253,7 +253,7 @@ public class MatrixOpsImplMTJ extends MatrixOps {
     final QR qr = new QR(block_.numRows(), block_.numColumns());
     block_ = qr.factor(block_).getQ(); // important for numeric stability
 
-    for (int i = 0; i < DEFAULT_NUM_ITER; ++i) {
+    for (int i = 0; i < numSISVDIter_; ++i) {
       A.mult(block_, T_);
       A.transAmult(T_, block_);
       block_ = qr.factor(block_).getQ(); // again, for stability

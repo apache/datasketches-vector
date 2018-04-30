@@ -27,7 +27,6 @@ import static com.yahoo.sketches.vector.decomposition.PreambleUtil.insertPreLong
 import static com.yahoo.sketches.vector.decomposition.PreambleUtil.insertSVAdjustment;
 import static com.yahoo.sketches.vector.decomposition.PreambleUtil.insertSerVer;
 
-import com.yahoo.sketches.vector.matrix.MatrixType;
 import org.ojalgo.array.Array1D;
 import org.ojalgo.matrix.decomposition.SingularValue;
 import org.ojalgo.matrix.store.MatrixStore;
@@ -38,7 +37,7 @@ import com.yahoo.memory.Memory;
 import com.yahoo.memory.WritableMemory;
 import com.yahoo.sketches.vector.MatrixFamily;
 import com.yahoo.sketches.vector.matrix.Matrix;
-import com.yahoo.sketches.vector.matrix.MatrixBuilder;
+import com.yahoo.sketches.vector.matrix.MatrixType;
 
 /**
  * This class implements the Frequent Directions algorithm proposed by Edo Liberty in "Simple and

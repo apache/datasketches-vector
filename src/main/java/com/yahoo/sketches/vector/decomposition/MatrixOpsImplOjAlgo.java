@@ -1,6 +1,5 @@
 package com.yahoo.sketches.vector.decomposition;
 
-import com.yahoo.sketches.vector.matrix.MatrixImplOjAlgo;
 import org.ojalgo.matrix.decomposition.QR;
 import org.ojalgo.matrix.decomposition.SingularValue;
 import org.ojalgo.matrix.store.MatrixStore;
@@ -9,9 +8,10 @@ import org.ojalgo.matrix.store.SparseStore;
 import org.ojalgo.random.Normal;
 
 import com.yahoo.sketches.vector.matrix.Matrix;
+import com.yahoo.sketches.vector.matrix.MatrixImplOjAlgo;
 import com.yahoo.sketches.vector.matrix.MatrixType;
 
-public class MatrixOpsImplOjAlgo extends MatrixOps {
+class MatrixOpsImplOjAlgo extends MatrixOps {
   //private SingularValue<Double> svd;
   private double[] sv_;
   private PrimitiveDenseStore Vt_;
@@ -154,7 +154,7 @@ public class MatrixOpsImplOjAlgo extends MatrixOps {
     qr_.decompose(block_);
     qr_.getQ().supplyTo(block_);
 
-    for (int i = 0; i < DEFAULT_NUM_ITER; ++i) {
+    for (int i = 0; i < numSISVDIter_; ++i) {
       A.multiply(block_).supplyTo(T_);
       A.transpose().multiply(T_).supplyTo(block_);
 

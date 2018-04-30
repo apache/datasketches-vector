@@ -12,8 +12,8 @@ import com.yahoo.sketches.vector.matrix.Matrix;
  */
 public abstract class MatrixOps {
 
-  // number of iterations for SISVD
-  static final int DEFAULT_NUM_ITER = 200;
+  // iterations for SISVD
+  private static final int DEFAULT_NUM_ITER = 8;
 
   /**
    * Matrix dimensions
@@ -30,6 +30,8 @@ public abstract class MatrixOps {
    * Singular value decomposition method to use
    */
   final SVDAlgo algo_;
+
+  int numSISVDIter_;
 
   /**
    * Creates an empty MatrixOps object to support Frequent Directions matrix operations
@@ -68,6 +70,8 @@ public abstract class MatrixOps {
     d_ = d;
     algo_ = algo;
     k_ = k;
+
+    numSISVDIter_ = DEFAULT_NUM_ITER;
   }
 
   /**
@@ -128,4 +132,7 @@ public abstract class MatrixOps {
    */
   abstract MatrixOps svd(final Matrix A, final boolean computeVectors);
 
+  void setNumSISVDIter(final int numSISVDIter) {
+    numSISVDIter_ = numSISVDIter;
+  }
 }
