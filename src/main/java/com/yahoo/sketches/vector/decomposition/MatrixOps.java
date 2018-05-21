@@ -45,17 +45,25 @@ public abstract class MatrixOps {
     final int n = (int) A.getNumRows();
     final int d = (int) A.getNumColumns();
 
+    MatrixOps mo;
+
     switch (A.getMatrixType()) {
       case OJALGO:
-        //return new MatrixOpsImplOjAlgo(A, algo, k);
-        return new MatrixOpsImplOjAlgo(n, d, algo, k);
+        mo = new MatrixOpsImplOjAlgo(n, d, algo, k);
+        break;
 
       case MTJ:
-        //return new MatrixOpsImplMTJ((MatrixImplMTJ) A, algo, k);
-        return new MatrixOpsImplMTJ(n, d, algo, k);
+        mo = new MatrixOpsImplMTJ(n, d, algo, k);
+        break;
+
+      default:
+        throw new IllegalArgumentException("Unknown MatrixType: " + A.getMatrixType().toString());
     }
 
-    throw new IllegalArgumentException("Unknown MatrixType: " + A.getMatrixType().toString());
+    if (algo == SVDAlgo.SISVD) {
+      mo.setNumSISVDIter((int) Math.ceil(Math.log(d)));
+    }
+    return mo;
   }
 
   MatrixOps(final int n, final int d, final SVDAlgo algo, final int k) {

@@ -82,7 +82,7 @@ public class FrequentDirectionsTest {
     input[(2 * k) - 1] = 0.0;
     input[2 * k] = 2.0 * k;
     fd.update(input); // trigger reduceRank(), then add 1 more row
-    assertEquals(fd.getNumRows(), k + 1);
+    assertEquals(fd.getNumRows(), k);
 
     fd.reset();
     assertTrue(fd.isEmpty());
@@ -140,7 +140,7 @@ public class FrequentDirectionsTest {
     assertEquals(fd2.getN(), initialRows);
 
     fd1.update(fd2);
-    final int expectedRows = ((2 * initialRows) % k) + k; // assumes 2 * initialRows > k
+    final int expectedRows = ((2 * initialRows) % k) + k - 1; // assumes 2 * initialRows > k
     assertEquals(fd1.getNumRows(), expectedRows);
     assertEquals(fd1.getN(), 2 * initialRows);
 

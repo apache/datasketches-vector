@@ -346,7 +346,7 @@ public final class NewFrequentDirections {
       return svd_.applyAdjustment(B_, svAdjustment_);
     } else {
       //result = PrimitiveDenseStore.FACTORY.copy(B_);
-      return Matrix.wrap(B_);
+      return B_;
     }
 
     //return Matrix.wrap(result);

@@ -6,6 +6,7 @@ package com.yahoo.sketches.vector.decomposition;
 
 import java.util.concurrent.ThreadLocalRandom;
 
+import no.uib.cipr.matrix.sparse.LinkedSparseMatrix;
 import org.netlib.util.intW;
 
 import com.github.fommil.netlib.BLAS;
@@ -18,6 +19,8 @@ import no.uib.cipr.matrix.MatrixEntry;
 import no.uib.cipr.matrix.NotConvergedException;
 import no.uib.cipr.matrix.QR;
 import no.uib.cipr.matrix.SVD;
+import no.uib.cipr.matrix.SymmDenseEVD;
+import no.uib.cipr.matrix.UpperSymmDenseMatrix;
 import no.uib.cipr.matrix.sparse.CompDiagMatrix;
 
 /**
@@ -47,6 +50,12 @@ class MatrixOpsImplMTJ extends MatrixOps {
    */
   private DenseMatrix block_;
   private DenseMatrix T_;
+
+  /**
+   * Work objects for SymmEVD
+   */
+  private SymmDenseEVD evd_;
+  private LinkedSparseMatrix rotS_;
 
   /**
    * Creates an empty MatrixOps
@@ -94,6 +103,8 @@ class MatrixOpsImplMTJ extends MatrixOps {
         return computeSISVD((DenseMatrix) A.getRawObject(), computeVectors);
 
       case SYM:
+        return computeSymmEigSVD((DenseMatrix) A.getRawObject(), computeVectors);
+
       default:
         throw new RuntimeException("SVDAlgo type not (yet?) supported: " + algo_.toString());
     }
@@ -277,6 +288,39 @@ class MatrixOpsImplMTJ extends MatrixOps {
       BLAS.getInstance().dgemm("T", "T", k_, d_, k_,
               1.0, svd.getVt().getData(), k_, block_.getData(), d_,
               0.0, Vt_.getData(), n_);
+    }
+
+    return this;
+  }
+
+  private MatrixOps computeSymmEigSVD(final DenseMatrix A, final boolean computeVectors) {
+    // TODO: when to allocate space?
+    if (T_ == null) {
+      T_ = new DenseMatrix(n_, n_);
+      rotS_ = new LinkedSparseMatrix(n_, n_); // only really needed if computing vectors, but also only O(n_) size
+      evd_ = new SymmDenseEVD(n_, true, true);
+    }
+
+    // want left singular vectors U, aka eigenvectors of AA^T -- so compute that
+    A.transBmult(A, T_);
+    try {
+      // TODO: direct LAPACK call lets us get only the top k values/vectors rather than all
+      evd_.factor(new UpperSymmDenseMatrix(T_, false));
+    } catch (NotConvergedException e) {
+      throw new RuntimeException(e.getMessage());
+    }
+
+    // TODO: can we only use k_ values?
+    final double[] ev = evd_.getEigenvalues();
+    for (int i = 0; i < ev.length; ++i) {
+      final double val = Math.sqrt(ev[i]);
+      sv_[n_ - i - 1] = val;
+      rotS_.set(n_ - i - 1, i, 1 / val);
+    }
+
+    if (computeVectors) {
+      rotS_.transBmult(evd_.getEigenvectors(), T_);
+      T_.mult(A, Vt_);
     }
 
     return this;
