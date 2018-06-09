@@ -1,5 +1,8 @@
 package com.yahoo.sketches.vector.decomposition;
 
+import java.util.Optional;
+
+import org.ojalgo.matrix.decomposition.Eigenvalue;
 import org.ojalgo.matrix.decomposition.QR;
 import org.ojalgo.matrix.decomposition.SingularValue;
 import org.ojalgo.matrix.store.MatrixStore;
@@ -12,14 +15,18 @@ import com.yahoo.sketches.vector.matrix.MatrixImplOjAlgo;
 import com.yahoo.sketches.vector.matrix.MatrixType;
 
 class MatrixOpsImplOjAlgo extends MatrixOps {
-  //private SingularValue<Double> svd;
   private double[] sv_;
   private PrimitiveDenseStore Vt_;
 
   // work objects for SISVD
   private PrimitiveDenseStore block_;
-  private PrimitiveDenseStore T_;
+  private PrimitiveDenseStore T_; // also used in SymmetricEVD
   private QR<Double> qr_;
+
+  // work objects for Symmetric EVD
+  private Eigenvalue<Double> evd_;
+  private SparseStore<Double> rotS_;
+
 
   transient private SparseStore<Double> S_; // to hold singular value matrix
 
@@ -55,6 +62,8 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
         return computeSISVD((PrimitiveDenseStore) A.getRawObject(), computeVectors);
 
       case SYM:
+        return computeSymmEigSVD((PrimitiveDenseStore) A.getRawObject(), computeVectors);
+
       default:
         throw new RuntimeException("SVDAlgo type not (yet?) supported: " + algo_.toString());
     }
@@ -175,6 +184,32 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
       // V = block * Q2^T so V^T = Q2 * block^T
       // and ojAlgo figures out that it only needs to fill the first k_ rows of Vt_
       svd.getQ2().multiply(block_.transpose()).supplyTo(Vt_);
+    }
+
+    return this;
+  }
+
+  private MatrixOps computeSymmEigSVD(final MatrixStore<Double> A, final boolean computeVectors) {
+    if (T_ == null) {
+      T_ = PrimitiveDenseStore.FACTORY.makeZero(n_, n_);
+      evd_ = Eigenvalue.PRIMITIVE.make(n_, true);
+    }
+
+    // want left singular vectors U, aka eigenvectors of AA^T -- so compute that
+    A.multiply(A.transpose()).supplyTo(T_);
+    evd_.decompose(T_);
+
+    // TODO: can we only use k_ values?
+    final double[] ev = new double[n_];
+    evd_.getEigenvalues(ev, Optional.empty());
+    for (int i = 0; i < ev.length; ++i) {
+      final double val = Math.sqrt(ev[i]);
+      sv_[i] = val;
+      if (computeVectors && val > 0) { S_.set(i, i, 1 / val); }
+    }
+
+    if (computeVectors) {
+      S_.multiply(evd_.getV().transpose()).multiply(A).supplyTo(Vt_);
     }
 
     return this;

@@ -292,7 +292,7 @@ public final class NewFrequentDirections {
   }
 
   /**
-   * Returns an orthonormal projection Matrix that can be used to project input vectors into the
+   * Returns an orthonormal projection Matrix V^T that can be used to project input vectors into the
    * k-dimensional space represented by the sketch.
    * @return An orthonormal Matrix object
    */

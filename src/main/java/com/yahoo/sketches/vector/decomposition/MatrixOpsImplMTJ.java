@@ -229,6 +229,12 @@ class MatrixOpsImplMTJ extends MatrixOps {
     // TODO: should allocate space for QR and final SVD here?
   }
 
+  private void allocateSpaceSymmEigSVD() {
+    T_ = new DenseMatrix(n_, n_);
+    rotS_ = new LinkedSparseMatrix(n_, n_); // only really needed if computing vectors, but also only O(n_) size
+    evd_ = new SymmDenseEVD(n_, true, true);
+  }
+
   private MatrixOps computeFullSVD(final DenseMatrix A, final boolean computeVectors) {
     if (work_ == null) {
       allocateSpaceFullSVD(computeVectors);
@@ -294,11 +300,8 @@ class MatrixOpsImplMTJ extends MatrixOps {
   }
 
   private MatrixOps computeSymmEigSVD(final DenseMatrix A, final boolean computeVectors) {
-    // TODO: when to allocate space?
     if (T_ == null) {
-      T_ = new DenseMatrix(n_, n_);
-      rotS_ = new LinkedSparseMatrix(n_, n_); // only really needed if computing vectors, but also only O(n_) size
-      evd_ = new SymmDenseEVD(n_, true, true);
+      allocateSpaceSymmEigSVD();
     }
 
     // want left singular vectors U, aka eigenvectors of AA^T -- so compute that
@@ -311,11 +314,16 @@ class MatrixOpsImplMTJ extends MatrixOps {
     }
 
     // TODO: can we only use k_ values?
+    // EVD gives values low-to-high; SVD does high-to-low and we want that order. Reverse the list when extracting
+    // SVs from eigenvalues, and generate a diagonal rotation matrix to save on an extra matrix multiply if we need to
+    // compute vectors later.
     final double[] ev = evd_.getEigenvalues();
     for (int i = 0; i < ev.length; ++i) {
       final double val = Math.sqrt(ev[i]);
       sv_[n_ - i - 1] = val;
-      rotS_.set(n_ - i - 1, i, 1 / val);
+      if (val > 0) {
+        rotS_.set(n_ - i - 1, i, 1 / val);
+      }
     }
 
     if (computeVectors) {
