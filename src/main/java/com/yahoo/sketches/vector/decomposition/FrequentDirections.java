@@ -27,16 +27,13 @@ import static com.yahoo.sketches.vector.decomposition.PreambleUtil.insertPreLong
 import static com.yahoo.sketches.vector.decomposition.PreambleUtil.insertSVAdjustment;
 import static com.yahoo.sketches.vector.decomposition.PreambleUtil.insertSerVer;
 
-import org.ojalgo.array.Array1D;
-import org.ojalgo.matrix.decomposition.SingularValue;
-import org.ojalgo.matrix.store.MatrixStore;
 import org.ojalgo.matrix.store.PrimitiveDenseStore;
-import org.ojalgo.matrix.store.SparseStore;
 
 import com.yahoo.memory.Memory;
 import com.yahoo.memory.WritableMemory;
 import com.yahoo.sketches.vector.MatrixFamily;
 import com.yahoo.sketches.vector.matrix.Matrix;
+import com.yahoo.sketches.vector.matrix.MatrixBuilder;
 import com.yahoo.sketches.vector.matrix.MatrixType;
 
 /**
@@ -47,7 +44,10 @@ import com.yahoo.sketches.vector.matrix.MatrixType;
  *
  * @author Jon Malkin
  */
-public final class FrequentDirections {
+public final class NewFrequentDirections {
+  private static final MatrixType DEFAULT_MATRIX_TYPE = MatrixType.OJALGO;
+  private static final SVDAlgo DEFAULT_SVD_ALGO = SVDAlgo.FULL;
+
   private final int k_;
   private final int l_;
   private final int d_;
@@ -55,20 +55,32 @@ public final class FrequentDirections {
 
   private double svAdjustment_;
 
-  private PrimitiveDenseStore B_;
-  transient private int nextZeroRow_;
+  private Matrix B_;
 
-  transient private final double[] sv_;           // pre-allocated to fetch singular values
-  transient private final SparseStore<Double> S_; // to hold singular value matrix
+  private SVDAlgo algo_ = DEFAULT_SVD_ALGO;
+
+  transient private int nextZeroRow_;
+  transient private MatrixOps svd_;                     // avoids re-initializing
 
   /**
-   * Creates a new instance of a Frequent Directions sketch.
+   * Creates a new instance of a Frequent Directions sketch using the default Linear Algebra backing library
    * @param k Number of dimensions (rows) in the sketch output
    * @param d Number of dimensions per input vector (columns)
    * @return An empty Frequent Directions sketch
    */
-  public static FrequentDirections newInstance(final int k, final int d) {
-    return new FrequentDirections(k, d);
+  public static NewFrequentDirections newInstance(final int k, final int d) {
+    return new NewFrequentDirections(k, d, null, DEFAULT_MATRIX_TYPE);
+  }
+
+  /**
+   * Creates a new instance of a Frequent Directions sketch using a specific MatrixType
+   * @param k Number of dimensions (rows) in the sketch output
+   * @param d Number of dimensions per input vector (columns)
+   * @param type MatrixType to use for backing matrix. Impacts choice of SVD library.
+   * @return An empty Frequent Directions sketch
+   */
+  public static NewFrequentDirections newInstance(final int k, final int d, final MatrixType type) {
+    return new NewFrequentDirections(k, d, null, type);
   }
 
   /**
@@ -76,7 +88,17 @@ public final class FrequentDirections {
    * @param srcMem Memory containing the serialized image of a Frequent Directions sketch
    * @return A Frequent Directions sketch
    */
-  public static FrequentDirections heapify(final Memory srcMem) {
+  public static NewFrequentDirections heapify(final Memory srcMem) {
+    return heapify(srcMem, DEFAULT_MATRIX_TYPE);
+  }
+
+  /**
+   * Instantiates a Frequent Directions sketch from a serialized image using a specific MatrixType.
+   * @param srcMem Memory containing the serialized image of a Frequent Directions sketch
+   * @param type The MatrixType to use with this instance
+   * @return A Frequent Directions sketch
+   */
+  public static NewFrequentDirections heapify(final Memory srcMem, final MatrixType type) {
     final int preLongs = getAndCheckPreLongs(srcMem);
     final int serVer = extractSerVer(srcMem);
     if (serVer != SER_VER) {
@@ -95,16 +117,15 @@ public final class FrequentDirections {
     final boolean empty = (extractFlags(srcMem) & EMPTY_FLAG_MASK) > 0;
 
     if (empty) {
-      return new FrequentDirections(k, d);
+      return new NewFrequentDirections(k, d);
     }
 
     final long offsetBytes = preLongs * Long.BYTES;
     final long mtxBytes = srcMem.getCapacity() - offsetBytes;
-    final Matrix B = Matrix.heapify(srcMem.region(offsetBytes, mtxBytes), MatrixType.OJALGO);
+    final Matrix B = Matrix.heapify(srcMem.region(offsetBytes, mtxBytes), type);
     assert B != null;
 
-    final FrequentDirections fd
-            = new FrequentDirections(k, d, (PrimitiveDenseStore) B.getRawObject());
+    final NewFrequentDirections fd = new NewFrequentDirections(k, d, B, B.getMatrixType());
     fd.n_ = extractN(srcMem);
     fd.nextZeroRow_ = numRows;
     fd.svAdjustment_ = extractSVAdjustment(srcMem);
@@ -112,11 +133,12 @@ public final class FrequentDirections {
     return fd;
   }
 
-  private FrequentDirections(final int k, final int d) {
-    this(k, d, null);
+  private NewFrequentDirections(final int k, final int d) {
+    this(k, d, null, DEFAULT_MATRIX_TYPE);
   }
 
-  private FrequentDirections(final int k, final int d, final PrimitiveDenseStore B) {
+  // uses MatrixType of B, if present, otherwise falls back to type input
+  private NewFrequentDirections(final int k, final int d, final Matrix B, final MatrixType type) {
     if (k < 1) {
       throw new IllegalArgumentException("Number of projected dimensions must be at least 1");
     }
@@ -138,14 +160,12 @@ public final class FrequentDirections {
     n_ = 0;
 
     if (B == null) {
-      B_ = PrimitiveDenseStore.FACTORY.makeZero(l_, d_);
+      B_ = new MatrixBuilder().setType(type).build(l_, d_);
     } else {
       B_ = B;
     }
 
     final int svDim = Math.min(l_, d_);
-    sv_ = new double[svDim];
-    S_ = SparseStore.makePrimitive(svDim, svDim);
   }
 
   /**
@@ -166,10 +186,7 @@ public final class FrequentDirections {
       reduceRank();
     }
 
-    // dense input so set all values
-    for (int i = 0; i < vector.length; ++i) {
-      B_.set(nextZeroRow_, i, vector[i]);
-    }
+    B_.setRow(nextZeroRow_, vector);
 
     ++n_;
     ++nextZeroRow_;
@@ -179,7 +196,7 @@ public final class FrequentDirections {
    * Merge a Frequent Directions sketch into the current one.
    * @param fd A Frequent Direction sketch to be merged.
    */
-  public void update(final FrequentDirections fd) {
+  public void update(final NewFrequentDirections fd) {
     if (fd == null || fd.nextZeroRow_ == 0) {
       return;
     }
@@ -194,11 +211,7 @@ public final class FrequentDirections {
         reduceRank();
       }
 
-      final Array1D<Double> rv = fd.B_.sliceRow(m);
-      for (int i = 0; i < rv.count(); ++i) {
-        B_.set(nextZeroRow_, i, rv.get(i));
-      }
-
+      B_.setRow(nextZeroRow_, fd.B_.getRow(m));
       ++nextZeroRow_;
     }
 
@@ -233,6 +246,14 @@ public final class FrequentDirections {
   public long getN() { return n_; }
 
   /**
+   * Sets the SVD algorithm to use, allowing exact or approximate computation
+   * @param algo The SVDAlgo type to use
+   */
+  public void setSVDAlgo(final SVDAlgo algo) {
+    algo_ = algo;
+  }
+
+  /**
    * Returns the singular values of the sketch, adjusted for the mass subtracted off during the
    * algorithm.
    * @return An array of singular values.
@@ -249,17 +270,19 @@ public final class FrequentDirections {
    * @return An array of singular values.
    */
   public double[] getSingularValues(final boolean compensative) {
-    final SingularValue<Double> svd = SingularValue.make(B_);
-    svd.compute(B_);
-    svd.getSingularValues(sv_);
+    if (svd_ == null) {
+      svd_ = MatrixOps.newInstance(B_, algo_, k_);
+    }
 
-    double medianSVSq = sv_[k_ - 1]; // (l_/2)th item, not yet squared
+    final double[] sv = svd_.getSingularValues(B_);
+
+    double medianSVSq = sv[k_ - 1]; // (l_/2)th item, not yet squared
     medianSVSq *= medianSVSq;
     final double tmpSvAdj = svAdjustment_ + medianSVSq;
     final double[] svList = new double[k_];
 
     for (int i = 0; i < k_ - 1; ++i) {
-      final double val = sv_[i];
+      final double val = sv[i];
       double adjSqSV = val * val - medianSVSq;
       if (compensative) { adjSqSV += tmpSvAdj; }
       svList[i] = adjSqSV < 0 ? 0.0 : Math.sqrt(adjSqSV);
@@ -269,22 +292,16 @@ public final class FrequentDirections {
   }
 
   /**
-   * Returns an orthonormal projection Matrix that can be used to project input vectors into the
+   * Returns an orthonormal projection Matrix V^T that can be used to project input vectors into the
    * k-dimensional space represented by the sketch.
    * @return An orthonormal Matrix object
    */
   public Matrix getProjectionMatrix() {
-    final SingularValue<Double> svd = SingularValue.make(B_);
-    svd.compute(B_);
-    final MatrixStore<Double> m = svd.getQ2().transpose();
-
-    // not super efficient...
-    final Matrix result = Matrix.builder().build(k_, d_);
-    for (int i = 0; i < k_ - 1; ++i) { // last SV is 0
-      result.setRow(i, m.sliceRow(i).toRawCopy1D());
+    if (svd_ == null) {
+      svd_ = MatrixOps.newInstance(B_, algo_, k_);
     }
 
-    return result;
+    return svd_.getVt();
   }
 
   /**
@@ -308,44 +325,31 @@ public final class FrequentDirections {
 
   /**
    * Returns a Matrix with the current state of the sketch. Call <tt>trim()</tt> first to ensure
-   * no more than k rows. If compensative, uses only the top k singular values.
-   * @param compensative If true, applies adjustment to singular values based on the cumulative
-   *                     weight subtracted off
-   * @return A Matrix representing the data in this sketch
+   * no more than k rows. If compensative, uses only the top k singular values. If not applying compensation factor,
+   * this method returns the actual data object meaning any changes to the result data will corrupt the sketch.
+   * @param compensative If true, returns a copy of the data matrix after applying adjustment to singular values
+   *                     based on the cumulative weight subtracted off. If false, returns the actual data matrix.
+   * @return A Matrix representing the data in this sketch; the actual
    */
   public Matrix getResult(final boolean compensative) {
     if (isEmpty()) {
       return null;
     }
 
-    final PrimitiveDenseStore result = PrimitiveDenseStore.FACTORY.makeZero(nextZeroRow_, d_);
+    final PrimitiveDenseStore result;
 
     if (compensative) {
-      final SingularValue<Double> svd = SingularValue.make(B_);
-      svd.compute(B_);
-      svd.getSingularValues(sv_);
-
-      for (int i = 0; i < k_ - 1; ++i) {
-        final double val = sv_[i];
-        final double adjSV = Math.sqrt(val * val + svAdjustment_);
-        S_.set(i, i, adjSV);
-      }
-      for (int i = k_ - 1; i < S_.countColumns(); ++i) {
-        S_.set(i, i, 0.0);
+      if (svd_ == null) {
+        svd_ = MatrixOps.newInstance(B_, algo_, k_);
       }
 
-      S_.multiply(svd.getQ2().transpose(), result);
+      return svd_.applyAdjustment(B_, svAdjustment_);
     } else {
-      // there's gotta be a better way to copy rows than this
-      for (int i = 0; i < nextZeroRow_; ++i) {
-        int j = 0;
-        for (double d : B_.sliceRow(i)) {
-          result.set(i, j++, d);
-        }
-      }
+      //result = PrimitiveDenseStore.FACTORY.copy(B_);
+      return B_;
     }
 
-    return Matrix.wrap(result);
+    //return Matrix.wrap(result);
   }
 
   /**
@@ -462,30 +466,33 @@ public final class FrequentDirections {
       return sb.toString();
     }
 
-    final Matrix mtx = Matrix.wrap(B_);
-    final int tmpColDim = (int) mtx.getNumColumns();
+    final int tmpColDim = (int) B_.getNumColumns();
 
     sb.append("   Matrix data  :").append(LS);
-    sb.append(mtx.getClass().getName());
+    sb.append(B_.getClass().getName());
     sb.append(" < ").append(nextZeroRow_).append(" x ").append(tmpColDim).append(" >");
 
     // First element
-    sb.append("\n{ { ").append(mtx.getElement(0, 0));
+    //sb.append("\n{ { ").append(B_.getElement(0, 0));
+    sb.append("\n{ { ").append(String.format("%.3f", B_.getElement(0, 0)));
 
     // Rest of the first row
     for (int j = 1; j < tmpColDim; j++) {
-      sb.append(",\t").append(mtx.getElement(0, j));
+      //sb.append(",\t").append(B_.getElement(0, j));
+      sb.append(",\t").append(String.format("%.3f", B_.getElement(0, j)));
     }
 
     // For each of the remaining rows
     for (int i = 1; i < nextZeroRow_; i++) {
 
       // First column
-      sb.append(" },\n{ ").append(mtx.getElement(i, 0));
+      //sb.append(" },\n{ ").append(B_.getElement(i, 0));
+      sb.append(" },\n{ ").append(String.format("%.3f", B_.getElement(i, 0)));
 
       // Remaining columns
       for (int j = 1; j < tmpColDim; j++) {
-        sb.append(",\t").append(mtx.getElement(i, j));
+        //sb.append(",\t").append(B_.getElement(i, j));
+        sb.append(",\t").append(String.format("%.3f", B_.getElement(i, j)));
       }
     }
 
@@ -502,38 +509,17 @@ public final class FrequentDirections {
   double getSvAdjustment() { return svAdjustment_; }
 
   private void reduceRank() {
-    //System.out.println(toString(true, true, false));
-
-    final SingularValue<Double> svd = SingularValue.make(B_);
-    svd.compute(B_);
-    svd.getSingularValues(sv_);
-
-    if (sv_.length >= k_) {
-      double medianSVSq = sv_[k_ - 1]; // (l_/2)th item, not yet squared
-      medianSVSq *= medianSVSq;
-      svAdjustment_ += medianSVSq; // always track, even if not using compensative mode
-      for (int i = 0; i < k_ - 1; ++i) {
-        final double val = sv_[i];
-        final double adjSqSV = val * val - medianSVSq;
-        S_.set(i, i, adjSqSV < 0 ? 0.0 : Math.sqrt(adjSqSV));
-      }
-      for (int i = k_ - 1; i < S_.countColumns(); ++i) {
-        S_.set(i, i, 0.0);
-      }
-      nextZeroRow_ = k_ - 1;
-    } else {
-      for (int i = 0; i < sv_.length; ++i) {
-        S_.set(i, i, sv_[i]);
-      }
-      for (int i = sv_.length; i < S_.countColumns(); ++i) {
-        S_.set(i, i, 0.0);
-      }
-      nextZeroRow_ = sv_.length;
-      throw new RuntimeException("Running with d < 2k not yet supported");
+    if (svd_ == null) {
+      svd_ = MatrixOps.newInstance(B_, algo_, k_);
     }
 
-    S_.multiply(svd.getQ2().transpose()).supplyTo(B_);
+    //System.out.println(toString(true, true, false));
+
+    final double newSvAdjustment = svd_.reduceRank(B_);
+    svAdjustment_ += newSvAdjustment;
+    nextZeroRow_ = k_ - 1; //(int) Math.min(k_, n_); //svd_.getSingularValues().length;
 
     //System.out.println(toString(true, true, false));
+    //System.exit(0);
   }
 }

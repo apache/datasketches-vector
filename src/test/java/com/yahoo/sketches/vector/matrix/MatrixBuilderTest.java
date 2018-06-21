@@ -17,7 +17,13 @@ public class MatrixBuilderTest {
     final MatrixBuilder builder = new MatrixBuilder();
     assertEquals(builder.getBackingType(), MatrixType.OJALGO); // default type
 
-    final Matrix m = builder.build(128, 512);
+    Matrix m = builder.build(128, 512);
+    assertNotNull(m);
+
+    builder.setType(MatrixType.MTJ);
+    assertEquals(builder.getBackingType(), MatrixType.MTJ);
+
+    m = builder.build(128, 512);
     assertNotNull(m);
   }
 
@@ -32,12 +38,6 @@ public class MatrixBuilderTest {
     builder.setType(MatrixType.MTJ);
     assertEquals(builder.getBackingType(), MatrixType.MTJ);
     assertEquals(builder.getBackingType().toString(), "MTJ");
-
-    try {
-      builder.build(10, 20);
-    } catch (final IllegalArgumentException e) {
-      // expected until native is implemented
-    }
   }
 
 }
