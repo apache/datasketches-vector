@@ -45,7 +45,7 @@ public final class PreambleUtil {
   /**
    * The java line separator character as a String.
    */
-  public static final String LS = System.getProperty("line.separator");
+  private static final String LS = System.getProperty("line.separator");
 
   private PreambleUtil() {}
 
@@ -63,7 +63,6 @@ public final class PreambleUtil {
 
   // flag bit masks
   static final int EMPTY_FLAG_MASK        = 4;
-  static final int COMPENSATIVE_FLAG_MASK = 128;
 
   // Other constants
   static final int SER_VER                = 1;

@@ -7,10 +7,10 @@ package com.yahoo.sketches.vector.decomposition;
 import com.yahoo.sketches.vector.matrix.Matrix;
 
 /**
- * Computes singular value decompositions and related Matrix operations needed by Frequent Directions. May return as
- * many singular values as exist, but other operations will limit output to k dimensions.
+ * Computes singular value decompositions and related Matrix operations needed by Frequent Directions. May
+ * return as many singular values as exist, but other operations will limit output to k dimensions.
  */
-public abstract class MatrixOps {
+abstract class MatrixOps {
 
   // iterations for SISVD
   private static final int DEFAULT_NUM_ITER = 8;
@@ -45,7 +45,7 @@ public abstract class MatrixOps {
     final int n = (int) A.getNumRows();
     final int d = (int) A.getNumColumns();
 
-    MatrixOps mo;
+    final MatrixOps mo;
 
     switch (A.getMatrixType()) {
       case OJALGO:
@@ -83,7 +83,8 @@ public abstract class MatrixOps {
   }
 
   /**
-   * Computes and returns the singular values, in descending order.
+   * Computes and returns the singular values, in descending order. May modify the internal state
+   * of this object.
    * @param A Matrix to decompose
    * @return Array of singular values
    */
@@ -99,13 +100,13 @@ public abstract class MatrixOps {
   abstract double[] getSingularValues();
 
   /**
-   * Computes and returns the right singular vectors of A.
+   * Computes and returns the right singular vectors of A. May modify the internal state of this object.
    * @param A Matrix to decompose
    * @return Matrix of size d x k
    */
   public Matrix getVt(final Matrix A) {
     svd(A, true);
-    return Matrix.wrap(getVt());
+    return getVt();
   }
 
   /**
@@ -116,15 +117,15 @@ public abstract class MatrixOps {
   abstract Matrix getVt();
 
   /**
-   * Performs a Frequent Directions rank reduction with the SVDAlgo used when obtaining the instance. Modifies internal
-   * state, with results queried via getVt() and getSingularValues().
+   * Performs a Frequent Directions rank reduction with the SVDAlgo used when obtaining the instance.
+   * Modifies internal state, with results queried via getVt() and getSingularValues().
    * @return The amount of weight subtracted from the singular values
    */
   abstract double reduceRank(final Matrix A);
 
   /**
-   * Returns Matrix object reconstructed using the provided singular value adjustment. Requires first decomposing the
-   * matrix.
+   * Returns Matrix object reconstructed using the provided singular value adjustment. Requires first
+   * decomposing the matrix.
    * @param A Matrix to decompose and adjust
    * @param adjustment Amount by which to adjust the singular values
    * @return A new Matrix based on A with singular values adjusted by adjustment
@@ -134,11 +135,11 @@ public abstract class MatrixOps {
   /**
    * Computes a singular value decomposition of the provided Matrix.
    *
-   * @param A Matrix to decompose. Size must conform, and it may be overwritten on return. Pass a copy to avoid this.
+   * @param A Matrix to decompose. Size must conform, and it may be overwritten on return. Pass a copy to
+   *          avoid this.
    * @param computeVectors True to compute Vt, false if only need singular values/
-   * @return The current MatrixOps object
    */
-  abstract MatrixOps svd(final Matrix A, final boolean computeVectors);
+  abstract void svd(final Matrix A, final boolean computeVectors);
 
   void setNumSISVDIter(final int numSISVDIter) {
     numSISVDIter_ = numSISVDIter;

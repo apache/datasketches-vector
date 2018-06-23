@@ -44,9 +44,9 @@ import com.yahoo.sketches.vector.matrix.MatrixType;
  *
  * @author Jon Malkin
  */
-public final class NewFrequentDirections {
+public final class FrequentDirections {
   private static final MatrixType DEFAULT_MATRIX_TYPE = MatrixType.OJALGO;
-  private static final SVDAlgo DEFAULT_SVD_ALGO = SVDAlgo.FULL;
+  private static final SVDAlgo DEFAULT_SVD_ALGO = SVDAlgo.SYM;
 
   private final int k_;
   private final int l_;
@@ -68,19 +68,20 @@ public final class NewFrequentDirections {
    * @param d Number of dimensions per input vector (columns)
    * @return An empty Frequent Directions sketch
    */
-  public static NewFrequentDirections newInstance(final int k, final int d) {
-    return new NewFrequentDirections(k, d, null, DEFAULT_MATRIX_TYPE);
+  public static FrequentDirections newInstance(final int k, final int d) {
+    return newInstance(k, d, DEFAULT_MATRIX_TYPE);
   }
 
   /**
    * Creates a new instance of a Frequent Directions sketch using a specific MatrixType
+   * Package-private until (if ever) MTJ works properly.
    * @param k Number of dimensions (rows) in the sketch output
    * @param d Number of dimensions per input vector (columns)
    * @param type MatrixType to use for backing matrix. Impacts choice of SVD library.
    * @return An empty Frequent Directions sketch
    */
-  public static NewFrequentDirections newInstance(final int k, final int d, final MatrixType type) {
-    return new NewFrequentDirections(k, d, null, type);
+  static FrequentDirections newInstance(final int k, final int d, final MatrixType type) {
+    return new FrequentDirections(k, d, null, type);
   }
 
   /**
@@ -88,17 +89,18 @@ public final class NewFrequentDirections {
    * @param srcMem Memory containing the serialized image of a Frequent Directions sketch
    * @return A Frequent Directions sketch
    */
-  public static NewFrequentDirections heapify(final Memory srcMem) {
+  public static FrequentDirections heapify(final Memory srcMem) {
     return heapify(srcMem, DEFAULT_MATRIX_TYPE);
   }
 
   /**
    * Instantiates a Frequent Directions sketch from a serialized image using a specific MatrixType.
+   * Package-private until (if ever) MTJ works properly.
    * @param srcMem Memory containing the serialized image of a Frequent Directions sketch
    * @param type The MatrixType to use with this instance
    * @return A Frequent Directions sketch
    */
-  public static NewFrequentDirections heapify(final Memory srcMem, final MatrixType type) {
+  static FrequentDirections heapify(final Memory srcMem, final MatrixType type) {
     final int preLongs = getAndCheckPreLongs(srcMem);
     final int serVer = extractSerVer(srcMem);
     if (serVer != SER_VER) {
@@ -117,7 +119,7 @@ public final class NewFrequentDirections {
     final boolean empty = (extractFlags(srcMem) & EMPTY_FLAG_MASK) > 0;
 
     if (empty) {
-      return new NewFrequentDirections(k, d);
+      return new FrequentDirections(k, d);
     }
 
     final long offsetBytes = preLongs * Long.BYTES;
@@ -125,7 +127,7 @@ public final class NewFrequentDirections {
     final Matrix B = Matrix.heapify(srcMem.region(offsetBytes, mtxBytes), type);
     assert B != null;
 
-    final NewFrequentDirections fd = new NewFrequentDirections(k, d, B, B.getMatrixType());
+    final FrequentDirections fd = new FrequentDirections(k, d, B, B.getMatrixType());
     fd.n_ = extractN(srcMem);
     fd.nextZeroRow_ = numRows;
     fd.svAdjustment_ = extractSVAdjustment(srcMem);
@@ -133,12 +135,12 @@ public final class NewFrequentDirections {
     return fd;
   }
 
-  private NewFrequentDirections(final int k, final int d) {
+  private FrequentDirections(final int k, final int d) {
     this(k, d, null, DEFAULT_MATRIX_TYPE);
   }
 
   // uses MatrixType of B, if present, otherwise falls back to type input
-  private NewFrequentDirections(final int k, final int d, final Matrix B, final MatrixType type) {
+  private FrequentDirections(final int k, final int d, final Matrix B, final MatrixType type) {
     if (k < 1) {
       throw new IllegalArgumentException("Number of projected dimensions must be at least 1");
     }
@@ -164,8 +166,6 @@ public final class NewFrequentDirections {
     } else {
       B_ = B;
     }
-
-    final int svDim = Math.min(l_, d_);
   }
 
   /**
@@ -196,7 +196,7 @@ public final class NewFrequentDirections {
    * Merge a Frequent Directions sketch into the current one.
    * @param fd A Frequent Direction sketch to be merged.
    */
-  public void update(final NewFrequentDirections fd) {
+  public void update(final FrequentDirections fd) {
     if (fd == null || fd.nextZeroRow_ == 0) {
       return;
     }
@@ -246,7 +246,7 @@ public final class NewFrequentDirections {
   public long getN() { return n_; }
 
   /**
-   * Sets the SVD algorithm to use, allowing exact or approximate computation
+   * Sets the SVD algorithm to use, allowing exact or approximate computation. @see SVDAlgo for details.
    * @param algo The SVDAlgo type to use
    */
   public void setSVDAlgo(final SVDAlgo algo) {
@@ -325,18 +325,18 @@ public final class NewFrequentDirections {
 
   /**
    * Returns a Matrix with the current state of the sketch. Call <tt>trim()</tt> first to ensure
-   * no more than k rows. If compensative, uses only the top k singular values. If not applying compensation factor,
-   * this method returns the actual data object meaning any changes to the result data will corrupt the sketch.
-   * @param compensative If true, returns a copy of the data matrix after applying adjustment to singular values
-   *                     based on the cumulative weight subtracted off. If false, returns the actual data matrix.
-   * @return A Matrix representing the data in this sketch; the actual
+   * no more than k rows. If compensative, uses only the top k singular values. If not applying compensation
+   * factor, this method returns the actual data object meaning any changes to the result data will corrupt
+   * the sketch.
+   * @param compensative If true, returns a copy of the data matrix after applying adjustment to singular
+   *                     values based on the cumulative weight subtracted off. If false, returns the actual
+   *                     data matrix.
+   * @return A Matrix of the data in this sketch, possibly adjusted by compensating for subtracted weight.
    */
   public Matrix getResult(final boolean compensative) {
     if (isEmpty()) {
       return null;
     }
-
-    final PrimitiveDenseStore result;
 
     if (compensative) {
       if (svd_ == null) {
@@ -345,11 +345,8 @@ public final class NewFrequentDirections {
 
       return svd_.applyAdjustment(B_, svAdjustment_);
     } else {
-      //result = PrimitiveDenseStore.FACTORY.copy(B_);
       return B_;
     }
-
-    //return Matrix.wrap(result);
   }
 
   /**
@@ -369,13 +366,11 @@ public final class NewFrequentDirections {
     final boolean empty = isEmpty();
     final int familyId = MatrixFamily.FREQUENTDIRECTIONS.getID();
 
-    final Matrix wrapB = Matrix.wrap(B_);
-
     final int preLongs = empty
             ? MatrixFamily.FREQUENTDIRECTIONS.getMinPreLongs()
             : MatrixFamily.FREQUENTDIRECTIONS.getMaxPreLongs();
 
-    final int mtxBytes = empty ? 0 : wrapB.getCompactSizeBytes(nextZeroRow_, d_);
+    final int mtxBytes = empty ? 0 : B_.getCompactSizeBytes(nextZeroRow_, d_);
     final int outBytes = (preLongs * Long.BYTES) + mtxBytes;
 
     final byte[] outArr = new byte[outBytes];
@@ -399,7 +394,7 @@ public final class NewFrequentDirections {
     insertSVAdjustment(memObj, memAddr, svAdjustment_);
 
     memOut.putByteArray(preLongs * Long.BYTES,
-            wrapB.toCompactByteArray(nextZeroRow_, d_), 0, mtxBytes);
+            B_.toCompactByteArray(nextZeroRow_, d_), 0, mtxBytes);
 
     return outArr;
   }
@@ -473,12 +468,10 @@ public final class NewFrequentDirections {
     sb.append(" < ").append(nextZeroRow_).append(" x ").append(tmpColDim).append(" >");
 
     // First element
-    //sb.append("\n{ { ").append(B_.getElement(0, 0));
     sb.append("\n{ { ").append(String.format("%.3f", B_.getElement(0, 0)));
 
     // Rest of the first row
     for (int j = 1; j < tmpColDim; j++) {
-      //sb.append(",\t").append(B_.getElement(0, j));
       sb.append(",\t").append(String.format("%.3f", B_.getElement(0, j)));
     }
 
@@ -486,12 +479,10 @@ public final class NewFrequentDirections {
     for (int i = 1; i < nextZeroRow_; i++) {
 
       // First column
-      //sb.append(" },\n{ ").append(B_.getElement(i, 0));
       sb.append(" },\n{ ").append(String.format("%.3f", B_.getElement(i, 0)));
 
       // Remaining columns
       for (int j = 1; j < tmpColDim; j++) {
-        //sb.append(",\t").append(B_.getElement(i, j));
         sb.append(",\t").append(String.format("%.3f", B_.getElement(i, j)));
       }
     }
@@ -513,13 +504,8 @@ public final class NewFrequentDirections {
       svd_ = MatrixOps.newInstance(B_, algo_, k_);
     }
 
-    //System.out.println(toString(true, true, false));
-
     final double newSvAdjustment = svd_.reduceRank(B_);
     svAdjustment_ += newSvAdjustment;
-    nextZeroRow_ = k_ - 1; //(int) Math.min(k_, n_); //svd_.getSingularValues().length;
-
-    //System.out.println(toString(true, true, false));
-    //System.exit(0);
+    nextZeroRow_ = (int) Math.min(k_ - 1, n_);
   }
 }

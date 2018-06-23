@@ -25,7 +25,6 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
 
   // work objects for Symmetric EVD
   private Eigenvalue<Double> evd_;
-  private SparseStore<Double> rotS_;
 
 
   transient private SparseStore<Double> S_; // to hold singular value matrix
@@ -39,7 +38,7 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
   }
 
   @Override
-  MatrixOps svd(final Matrix A, final boolean computeVectors) {
+  void svd(final Matrix A, final boolean computeVectors) {
     assert A.getMatrixType() == MatrixType.OJALGO;
 
     if (A.getNumRows() != n_) {
@@ -49,20 +48,22 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
     }
 
     if (computeVectors && Vt_ == null) {
-      //Vt_ = PrimitiveDenseStore.FACTORY.makeZero(k_, d_);
       Vt_ = PrimitiveDenseStore.FACTORY.makeZero(n_, d_);
       S_ = SparseStore.makePrimitive(sv_.length, sv_.length);
     }
 
     switch (algo_) {
       case FULL:
-        return computeFullSVD((PrimitiveDenseStore) A.getRawObject(), computeVectors);
+        computeFullSVD((PrimitiveDenseStore) A.getRawObject(), computeVectors);
+        return;
 
       case SISVD:
-        return computeSISVD((PrimitiveDenseStore) A.getRawObject(), computeVectors);
+        computeSISVD((PrimitiveDenseStore) A.getRawObject(), computeVectors);
+        return;
 
       case SYM:
-        return computeSymmEigSVD((PrimitiveDenseStore) A.getRawObject(), computeVectors);
+        computeSymmEigSVD((PrimitiveDenseStore) A.getRawObject(), computeVectors);
+        return;
 
       default:
         throw new RuntimeException("SVDAlgo type not (yet?) supported: " + algo_.toString());
@@ -92,21 +93,21 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
       for (int i = 0; i < k_ - 1; ++i) {
         final double val = sv_[i];
         final double adjSqSV = val * val - medianSVSq;
-        S_.set(i, i, adjSqSV < 0 ? 0.0 : Math.sqrt(adjSqSV));
+        S_.set(i, i, adjSqSV < 0 ? 0.0 : Math.sqrt(adjSqSV)); // just to be safe
       }
       for (int i = k_ - 1; i < S_.countColumns(); ++i) {
         S_.set(i, i, 0.0);
       }
-      //nextZeroRow_ = k_;
     } else {
+      throw new RuntimeException("Running with d < 2k not (yet?) supported");
+      /*
       for (int i = 0; i < sv_.length; ++i) {
         S_.set(i, i, sv_[i]);
       }
       for (int i = sv_.length; i < S_.countColumns(); ++i) {
         S_.set(i, i, 0.0);
       }
-      //nextZeroRow_ = sv_.length;
-      throw new RuntimeException("Running with d < 2k not yet supported");
+      */
     }
 
     // store the result back in A
@@ -118,7 +119,8 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
   @Override
   Matrix applyAdjustment(final Matrix A, final double svAdjustment) {
     // copy A before decomposing
-    final PrimitiveDenseStore result = PrimitiveDenseStore.FACTORY.copy((PrimitiveDenseStore) A.getRawObject());
+    final PrimitiveDenseStore result
+            = PrimitiveDenseStore.FACTORY.copy((PrimitiveDenseStore) A.getRawObject());
     svd(Matrix.wrap(result), true);
 
     for (int i = 0; i < k_ - 1; ++i) {
@@ -135,7 +137,7 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
     return Matrix.wrap(result);
   }
 
-  private MatrixOps computeFullSVD(final MatrixStore<Double> A, final boolean computeVectors) {
+  private void computeFullSVD(final MatrixStore<Double> A, final boolean computeVectors) {
     final SingularValue<Double> svd = SingularValue.make(A);
     svd.compute(A);
 
@@ -144,11 +146,9 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
     if (computeVectors) {
       svd.getQ2().transpose().supplyTo(Vt_);
     }
-
-    return this;
   }
 
-  private MatrixOps computeSISVD(final MatrixStore<Double> A, final boolean computeVectors) {
+  private void computeSISVD(final MatrixStore<Double> A, final boolean computeVectors) {
     // want to iterate on smaller dimension of A (n x d)
     // currently, error in constructor if d < n, so n is always the smaller dimension
     if (block_ == null) {
@@ -185,11 +185,9 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
       // and ojAlgo figures out that it only needs to fill the first k_ rows of Vt_
       svd.getQ2().multiply(block_.transpose()).supplyTo(Vt_);
     }
-
-    return this;
   }
 
-  private MatrixOps computeSymmEigSVD(final MatrixStore<Double> A, final boolean computeVectors) {
+  private void computeSymmEigSVD(final MatrixStore<Double> A, final boolean computeVectors) {
     if (T_ == null) {
       T_ = PrimitiveDenseStore.FACTORY.makeZero(n_, n_);
       evd_ = Eigenvalue.PRIMITIVE.make(n_, true);
@@ -211,7 +209,5 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
     if (computeVectors) {
       S_.multiply(evd_.getV().transpose()).multiply(A).supplyTo(Vt_);
     }
-
-    return this;
   }
 }

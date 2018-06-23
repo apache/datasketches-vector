@@ -6,7 +6,6 @@ package com.yahoo.sketches.vector.decomposition;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-import no.uib.cipr.matrix.sparse.LinkedSparseMatrix;
 import org.netlib.util.intW;
 
 import com.github.fommil.netlib.BLAS;
@@ -22,6 +21,7 @@ import no.uib.cipr.matrix.SVD;
 import no.uib.cipr.matrix.SymmDenseEVD;
 import no.uib.cipr.matrix.UpperSymmDenseMatrix;
 import no.uib.cipr.matrix.sparse.CompDiagMatrix;
+import no.uib.cipr.matrix.sparse.LinkedSparseMatrix;
 
 /**
  * Computes singular value decompositions
@@ -75,7 +75,7 @@ class MatrixOpsImplMTJ extends MatrixOps {
   }
 
   @Override
-  MatrixOps svd(final Matrix A, final boolean computeVectors) {
+  void svd(final Matrix A, final boolean computeVectors) {
     assert A.getMatrixType() == MatrixType.MTJ;
 
     if (A.getNumRows() != n_) {
@@ -86,7 +86,6 @@ class MatrixOpsImplMTJ extends MatrixOps {
 
     if (computeVectors && Vt_ == null) {
       Vt_ = new DenseMatrix(n_, d_);
-      //Vt_ = new DenseMatrix(k_, d_);
 
       final int[] diag = {0}; // only need the main diagonal
       S_ = new CompDiagMatrix(n_, n_, diag);
@@ -97,13 +96,16 @@ class MatrixOpsImplMTJ extends MatrixOps {
         // make a copy if not computing vectors to avoid changing the data
         final DenseMatrix mtx = computeVectors ? (DenseMatrix) A.getRawObject()
                 : new DenseMatrix((DenseMatrix) A.getRawObject());
-        return computeFullSVD(mtx, computeVectors);
+        computeFullSVD(mtx, computeVectors);
+        return;
 
       case SISVD:
-        return computeSISVD((DenseMatrix) A.getRawObject(), computeVectors);
+        computeSISVD((DenseMatrix) A.getRawObject(), computeVectors);
+        return;
 
       case SYM:
-        return computeSymmEigSVD((DenseMatrix) A.getRawObject(), computeVectors);
+        computeSymmEigSVD((DenseMatrix) A.getRawObject(), computeVectors);
+        return;
 
       default:
         throw new RuntimeException("SVDAlgo type not (yet?) supported: " + algo_.toString());
@@ -231,11 +233,11 @@ class MatrixOpsImplMTJ extends MatrixOps {
 
   private void allocateSpaceSymmEigSVD() {
     T_ = new DenseMatrix(n_, n_);
-    rotS_ = new LinkedSparseMatrix(n_, n_); // only really needed if computing vectors, but also only O(n_) size
+    rotS_ = new LinkedSparseMatrix(n_, n_); // only need if computing vectors, but only O(n_) size
     evd_ = new SymmDenseEVD(n_, true, true);
   }
 
-  private MatrixOps computeFullSVD(final DenseMatrix A, final boolean computeVectors) {
+  private void computeFullSVD(final DenseMatrix A, final boolean computeVectors) {
     if (work_ == null) {
       allocateSpaceFullSVD(computeVectors);
     }
@@ -252,11 +254,9 @@ class MatrixOpsImplMTJ extends MatrixOps {
     } else if (info.val < 0) {
       throw new IllegalArgumentException();
     }
-
-    return this;
   }
 
-  private MatrixOps computeSISVD(final DenseMatrix A, final boolean computeVectors) {
+  private void computeSISVD(final DenseMatrix A, final boolean computeVectors) {
     if (block_ == null) {
       allocateSpaceSISVD();
     }
@@ -295,11 +295,9 @@ class MatrixOpsImplMTJ extends MatrixOps {
               1.0, svd.getVt().getData(), k_, block_.getData(), d_,
               0.0, Vt_.getData(), n_);
     }
-
-    return this;
   }
 
-  private MatrixOps computeSymmEigSVD(final DenseMatrix A, final boolean computeVectors) {
+  private void computeSymmEigSVD(final DenseMatrix A, final boolean computeVectors) {
     if (T_ == null) {
       allocateSpaceSymmEigSVD();
     }
@@ -309,14 +307,14 @@ class MatrixOpsImplMTJ extends MatrixOps {
     try {
       // TODO: direct LAPACK call lets us get only the top k values/vectors rather than all
       evd_.factor(new UpperSymmDenseMatrix(T_, false));
-    } catch (NotConvergedException e) {
+    } catch (final NotConvergedException e) {
       throw new RuntimeException(e.getMessage());
     }
 
     // TODO: can we only use k_ values?
-    // EVD gives values low-to-high; SVD does high-to-low and we want that order. Reverse the list when extracting
-    // SVs from eigenvalues, and generate a diagonal rotation matrix to save on an extra matrix multiply if we need to
-    // compute vectors later.
+    // EVD gives values low-to-high; SVD does high-to-low and we want that order. Reverse
+    // the list when extracting SVs from eigenvalues, and generate a diagonal rotation matrix
+    // to save on an extra matrix multiply if we need to compute vectors later.
     final double[] ev = evd_.getEigenvalues();
     for (int i = 0; i < ev.length; ++i) {
       final double val = Math.sqrt(ev[i]);
@@ -330,8 +328,6 @@ class MatrixOpsImplMTJ extends MatrixOps {
       rotS_.transBmult(evd_.getEigenvectors(), T_);
       T_.mult(A, Vt_);
     }
-
-    return this;
   }
 
 }
