@@ -360,10 +360,10 @@ public class FrequentDirectionsTest {
     }
   }
 
-/**
- * println the message
- * @param msg the message
- */
+  /**
+   * println the message
+   * @param msg the message
+   */
   private void println(final String msg) {
     //System.out.println(msg);
   }

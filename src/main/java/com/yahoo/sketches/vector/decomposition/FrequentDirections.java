@@ -27,8 +27,6 @@ import static com.yahoo.sketches.vector.decomposition.PreambleUtil.insertPreLong
 import static com.yahoo.sketches.vector.decomposition.PreambleUtil.insertSVAdjustment;
 import static com.yahoo.sketches.vector.decomposition.PreambleUtil.insertSerVer;
 
-import org.ojalgo.matrix.store.PrimitiveDenseStore;
-
 import com.yahoo.memory.Memory;
 import com.yahoo.memory.WritableMemory;
 import com.yahoo.sketches.vector.MatrixFamily;

@@ -8,12 +8,11 @@ package com.yahoo.sketches.vector.matrix;
 
 import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.LS;
 
-import no.uib.cipr.matrix.DenseMatrix;
 import org.ojalgo.matrix.store.PrimitiveDenseStore;
 
 import com.yahoo.memory.Memory;
 import com.yahoo.sketches.vector.MatrixFamily;
-
+import no.uib.cipr.matrix.DenseMatrix;
 
 /**
  * Provides an implementation-agnostic wrapper around Matrix classes.
