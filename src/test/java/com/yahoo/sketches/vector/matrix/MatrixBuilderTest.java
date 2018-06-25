@@ -20,9 +20,6 @@ public class MatrixBuilderTest {
     Matrix m = builder.build(128, 512);
     assertNotNull(m);
 
-    builder.setType(MatrixType.MTJ);
-    assertEquals(builder.getBackingType(), MatrixType.MTJ);
-
     m = builder.build(128, 512);
     assertNotNull(m);
   }
@@ -34,10 +31,6 @@ public class MatrixBuilderTest {
     assertEquals(type, MatrixType.OJALGO); // default type
     assertEquals(type.getId(), MatrixType.OJALGO.getId());
     assertEquals(type.getName(), MatrixType.OJALGO.getName());
-
-    builder.setType(MatrixType.MTJ);
-    assertEquals(builder.getBackingType(), MatrixType.MTJ);
-    assertEquals(builder.getBackingType().toString(), "MTJ");
   }
 
 }

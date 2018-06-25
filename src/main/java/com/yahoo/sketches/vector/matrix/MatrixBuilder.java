@@ -45,11 +45,8 @@ public class MatrixBuilder {
       case OJALGO:
         return MatrixImplOjAlgo.newInstance(numRows, numCols);
 
-      case MTJ:
-        return MatrixImplMTJ.newInstance(numRows, numCols);
-
       default:
-        throw new IllegalArgumentException("OJALGO and MTJ are currently the only supported MatrixTypes");
+        throw new IllegalArgumentException("OJALGO is currently the only supported MatrixTypes");
     }
   }
 }
