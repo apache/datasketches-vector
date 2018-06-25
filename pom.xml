@@ -147,12 +147,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.googlecode.matrix-toolkits-java</groupId>
-            <artifactId>mtj</artifactId>
-            <version>1.0.4</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.ojalgo</groupId>
             <artifactId>ojalgo</artifactId>
             <version>45.0.0</version>
