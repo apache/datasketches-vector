@@ -52,10 +52,6 @@ abstract class MatrixOps {
         mo = new MatrixOpsImplOjAlgo(n, d, algo, k);
         break;
 
-      case MTJ:
-        mo = new MatrixOpsImplMTJ(n, d, algo, k);
-        break;
-
       default:
         throw new IllegalArgumentException("Unknown MatrixType: " + A.getMatrixType().toString());
     }

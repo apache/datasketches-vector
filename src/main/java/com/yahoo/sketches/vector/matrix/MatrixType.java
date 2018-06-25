@@ -1,8 +1,7 @@
 package com.yahoo.sketches.vector.matrix;
 
 public enum MatrixType {
-  OJALGO(1, "ojAlgo"),
-  MTJ(2, "MTJ");
+  OJALGO(1, "ojAlgo");
 
   private int id_;
   private String name_;

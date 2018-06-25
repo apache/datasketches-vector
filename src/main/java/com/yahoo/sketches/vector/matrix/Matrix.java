@@ -12,7 +12,6 @@ import org.ojalgo.matrix.store.PrimitiveDenseStore;
 
 import com.yahoo.memory.Memory;
 import com.yahoo.sketches.vector.MatrixFamily;
-import no.uib.cipr.matrix.DenseMatrix;
 
 /**
  * Provides an implementation-agnostic wrapper around Matrix classes.
@@ -36,8 +35,6 @@ public abstract class Matrix {
     switch (type) {
       case OJALGO:
         return MatrixImplOjAlgo.heapifyInstance(srcMem);
-      case MTJ:
-        return MatrixImplMTJ.heapifyInstance(srcMem);
       default:
         return null;
     }
@@ -54,8 +51,6 @@ public abstract class Matrix {
       return null;
     } else if (mtx instanceof PrimitiveDenseStore) {
       return MatrixImplOjAlgo.wrap((PrimitiveDenseStore) mtx);
-    } else if (mtx instanceof DenseMatrix) {
-      return MatrixImplMTJ.wrap((DenseMatrix) mtx);
     }
     else {
       throw new IllegalArgumentException("wrap() does not currently support "
