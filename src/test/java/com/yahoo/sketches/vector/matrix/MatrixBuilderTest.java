@@ -15,29 +15,29 @@ public class MatrixBuilderTest {
   @Test
   public void checkBuild() {
     final MatrixBuilder builder = new MatrixBuilder();
-    assertEquals(builder.getBackingType(), MatrixBuilder.Algo.OJALGO); // default type
+    assertEquals(builder.getBackingType(), MatrixType.OJALGO); // default type
 
-    final Matrix m = builder.build(128, 512);
+    Matrix m = builder.build(128, 512);
+    assertNotNull(m);
+
+    builder.setType(MatrixType.MTJ);
+    assertEquals(builder.getBackingType(), MatrixType.MTJ);
+
+    m = builder.build(128, 512);
     assertNotNull(m);
   }
 
   @Test
   public void checkSetType() {
     final MatrixBuilder builder = new MatrixBuilder();
-    final MatrixBuilder.Algo type = builder.getBackingType();
-    assertEquals(type, MatrixBuilder.Algo.OJALGO); // default type
-    assertEquals(type.getId(), MatrixBuilder.Algo.OJALGO.getId());
-    assertEquals(type.getName(), MatrixBuilder.Algo.OJALGO.getName());
+    final MatrixType type = builder.getBackingType();
+    assertEquals(type, MatrixType.OJALGO); // default type
+    assertEquals(type.getId(), MatrixType.OJALGO.getId());
+    assertEquals(type.getName(), MatrixType.OJALGO.getName());
 
-    builder.setType(MatrixBuilder.Algo.NATIVE);
-    assertEquals(builder.getBackingType(), MatrixBuilder.Algo.NATIVE);
-    assertEquals(builder.getBackingType().toString(), "native");
-
-    try {
-      builder.build(10, 20);
-    } catch (final IllegalArgumentException e) {
-      // expected until native is implemented
-    }
+    builder.setType(MatrixType.MTJ);
+    assertEquals(builder.getBackingType(), MatrixType.MTJ);
+    assertEquals(builder.getBackingType().toString(), "MTJ");
   }
 
 }

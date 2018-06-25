@@ -43,7 +43,7 @@ public final class MatrixPreambleUtil {
   /**
    * The java line separator character as a String.
    */
-  public static final String LS = System.getProperty("line.separator");
+  static final String LS = System.getProperty("line.separator");
 
   private MatrixPreambleUtil() {}
 
@@ -196,7 +196,7 @@ public final class MatrixPreambleUtil {
    * @param mem the given Memory
    * @return the extracted prelongs value.
    */
-  static int getAndCheckPreLongs(final Memory mem) {
+  private static int getAndCheckPreLongs(final Memory mem) {
     final long cap = mem.getCapacity();
     if (cap < Long.BYTES) { throwNotBigEnough(cap, Long.BYTES); }
     final int preLongs = extractPreLongs(mem);

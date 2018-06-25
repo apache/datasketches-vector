@@ -23,7 +23,7 @@ import java.util.Map;
  */
 public enum MatrixFamily {
   /**
-   * The Frequent Directions sketch is used for approximate Singular Value Decomposition (SVD) of a
+   * The Frequent Directions sketch is used for approximate Singular Value Decomposition (MatrixOps) of a
    * matrix.
    */
   MATRIX(128, "Matrix", 2, 3),

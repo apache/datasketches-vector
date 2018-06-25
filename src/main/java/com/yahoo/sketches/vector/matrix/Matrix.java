@@ -12,7 +12,7 @@ import org.ojalgo.matrix.store.PrimitiveDenseStore;
 
 import com.yahoo.memory.Memory;
 import com.yahoo.sketches.vector.MatrixFamily;
-
+import no.uib.cipr.matrix.DenseMatrix;
 
 /**
  * Provides an implementation-agnostic wrapper around Matrix classes.
@@ -32,10 +32,12 @@ public abstract class Matrix {
    * @param type Matrix implementation type to use
    * @return The heapified matrix
    */
-  public static Matrix heapify(final Memory srcMem, final MatrixBuilder.Algo type) {
+  public static Matrix heapify(final Memory srcMem, final MatrixType type) {
     switch (type) {
       case OJALGO:
         return MatrixImplOjAlgo.heapifyInstance(srcMem);
+      case MTJ:
+        return MatrixImplMTJ.heapifyInstance(srcMem);
       default:
         return null;
     }
@@ -52,6 +54,8 @@ public abstract class Matrix {
       return null;
     } else if (mtx instanceof PrimitiveDenseStore) {
       return MatrixImplOjAlgo.wrap((PrimitiveDenseStore) mtx);
+    } else if (mtx instanceof DenseMatrix) {
+      return MatrixImplMTJ.wrap((DenseMatrix) mtx);
     }
     else {
       throw new IllegalArgumentException("wrap() does not currently support "
@@ -156,7 +160,7 @@ public abstract class Matrix {
   }
 
   /**
-   * Gets serialized size of the Matrix in cmpact form, in bytes.
+   * Gets serialized size of the Matrix in compact form, in bytes.
    * @param rows Number of rows to select for writing
    * @param cols Number of columns to select for writing
    * @return Number of bytes needed to serialize the first (rows, cols) of this Matrix
@@ -213,4 +217,6 @@ public abstract class Matrix {
 
     return sb.toString();
   }
+
+  public abstract MatrixType getMatrixType();
 }

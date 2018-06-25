@@ -16,29 +16,28 @@ import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.extractNumRows
 import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.extractPreLongs;
 import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.extractSerVer;
 
-import org.ojalgo.matrix.store.PrimitiveDenseStore;
-
 import com.yahoo.memory.Memory;
 import com.yahoo.memory.WritableMemory;
 import com.yahoo.sketches.vector.MatrixFamily;
+import no.uib.cipr.matrix.DenseMatrix;
 
-public final class MatrixImplOjAlgo extends Matrix {
-  private PrimitiveDenseStore mtx_;
+public final class MatrixImplMTJ extends Matrix {
+  private DenseMatrix mtx_;
 
-  private MatrixImplOjAlgo(final int numRows, final int numCols) {
-    mtx_ = PrimitiveDenseStore.FACTORY.makeZero(numRows, numCols);
+  private MatrixImplMTJ(final int numRows, final int numCols) {
+    mtx_ = new DenseMatrix(numRows, numCols);
     numRows_ = numRows;
     numCols_ = numCols;
   }
 
-  private MatrixImplOjAlgo(final PrimitiveDenseStore mtx) {
+  private MatrixImplMTJ(final DenseMatrix mtx) {
     mtx_ = mtx;
-    numRows_ = (int) mtx.countRows();
-    numCols_ = (int) mtx.countColumns();
+    numRows_ = mtx.numRows();
+    numCols_ = mtx.numColumns();
   }
 
   static Matrix newInstance(final int numRows, final int numCols) {
-    return new MatrixImplOjAlgo(numRows, numCols);
+    return new MatrixImplMTJ(numRows, numCols);
   }
 
   static Matrix heapifyInstance(final Memory srcMem) {
@@ -67,25 +66,34 @@ public final class MatrixImplOjAlgo extends Matrix {
     int nRows = extractNumRows(srcMem);
     int nCols = extractNumColumns(srcMem);
 
-    final MatrixImplOjAlgo matrix = new MatrixImplOjAlgo(nRows, nCols);
+    final MatrixImplMTJ matrix;
+
     if (isCompact) {
+      matrix = new MatrixImplMTJ(nRows, nCols);
+
       nRows = extractNumRowsUsed(srcMem);
       nCols = extractNumColumnsUsed(srcMem);
-    }
 
-    int memOffset = preLongs * Long.BYTES;
-    for (int c = 0; c < nCols; ++c) {
-      for (int r = 0; r < nRows; ++r) {
-        matrix.mtx_.set(r, c, srcMem.getDouble(memOffset));
-        memOffset += Double.BYTES;
+      int memOffset = preLongs * Long.BYTES;
+      for (int c = 0; c < nCols; ++c) {
+        for (int r = 0; r < nRows; ++r) {
+          matrix.mtx_.set(r, c, srcMem.getDouble(memOffset));
+          memOffset += Double.BYTES;
+        }
       }
+    } else {
+      final int nElements = nRows * nCols;
+      final double[] data = new double[nElements];
+      srcMem.getDoubleArray(preLongs * Long.BYTES, data, 0, nElements);
+
+      matrix = new MatrixImplMTJ(new DenseMatrix(nRows, nCols, data, false));
     }
 
     return matrix;
   }
 
-  static Matrix wrap(final PrimitiveDenseStore mtx) {
-    return new MatrixImplOjAlgo(mtx);
+  static Matrix wrap(final DenseMatrix mtx) {
+    return new MatrixImplMTJ(mtx);
   }
 
   @Override
@@ -96,8 +104,8 @@ public final class MatrixImplOjAlgo extends Matrix {
   @Override
   public byte[] toByteArray() {
     final int preLongs = 2;
-    final long numElements = mtx_.count();
-    assert numElements == (mtx_.countColumns() * mtx_.countRows());
+    final long numElements = numRows_ * numCols_;
+    assert numElements == (mtx_.numRows() * mtx_.numColumns());
 
     final int outBytes = (int) ((preLongs * Long.BYTES) + (numElements * Double.BYTES));
     final byte[] outByteArr = new byte[outBytes];
@@ -109,9 +117,9 @@ public final class MatrixImplOjAlgo extends Matrix {
     MatrixPreambleUtil.insertSerVer(memObj, memAddr, MatrixPreambleUtil.SER_VER);
     MatrixPreambleUtil.insertFamilyID(memObj, memAddr, MatrixFamily.MATRIX.getID());
     MatrixPreambleUtil.insertFlags(memObj, memAddr, 0);
-    MatrixPreambleUtil.insertNumRows(memObj, memAddr, (int) mtx_.countRows());
-    MatrixPreambleUtil.insertNumColumns(memObj, memAddr, (int) mtx_.countColumns());
-    memOut.putDoubleArray(preLongs << 3, mtx_.data, 0, (int) numElements);
+    MatrixPreambleUtil.insertNumRows(memObj, memAddr, numRows_);
+    MatrixPreambleUtil.insertNumColumns(memObj, memAddr, numCols_);
+    memOut.putDoubleArray(preLongs << 3, mtx_.getData(), 0, (int) numElements);
 
     return outByteArr;
   }
@@ -124,12 +132,10 @@ public final class MatrixImplOjAlgo extends Matrix {
 
     // for non-compact we can do an array copy, so save as non-compact if using the entire matrix
     final long numElements = (long) numRows * numCols;
-    final boolean isCompact = numElements < mtx_.count();
+    final boolean isCompact = numElements < (mtx_.numRows() * mtx_.numColumns());
     if (!isCompact) {
       return toByteArray();
     }
-
-    assert numElements < mtx_.count();
 
     final int outBytes = (int) ((preLongs * Long.BYTES) + (numElements * Double.BYTES));
     final byte[] outByteArr = new byte[outBytes];
@@ -141,8 +147,8 @@ public final class MatrixImplOjAlgo extends Matrix {
     MatrixPreambleUtil.insertSerVer(memObj, memAddr, MatrixPreambleUtil.SER_VER);
     MatrixPreambleUtil.insertFamilyID(memObj, memAddr, MatrixFamily.MATRIX.getID());
     MatrixPreambleUtil.insertFlags(memObj, memAddr, COMPACT_FLAG_MASK);
-    MatrixPreambleUtil.insertNumRows(memObj, memAddr, (int) mtx_.countRows());
-    MatrixPreambleUtil.insertNumColumns(memObj, memAddr, (int) mtx_.countColumns());
+    MatrixPreambleUtil.insertNumRows(memObj, memAddr, mtx_.numRows());
+    MatrixPreambleUtil.insertNumColumns(memObj, memAddr, mtx_.numColumns());
     MatrixPreambleUtil.insertNumRowsUsed(memObj, memAddr, numRows);
     MatrixPreambleUtil.insertNumColumnsUsed(memObj, memAddr, numCols);
 
@@ -165,7 +171,7 @@ public final class MatrixImplOjAlgo extends Matrix {
 
   @Override
   public double[] getRow(final int row) {
-    final int cols = (int) mtx_.countColumns();
+    final int cols = mtx_.numColumns();
     final double[] result = new double[cols];
     for (int c = 0; c < cols; ++c) {
       result[c] = mtx_.get(row, c);
@@ -175,7 +181,7 @@ public final class MatrixImplOjAlgo extends Matrix {
 
   @Override
   public double[] getColumn(final int col) {
-    final int rows = (int) mtx_.countRows();
+    final int rows = mtx_.numRows();
     final double[] result = new double[rows];
     for (int r = 0; r < rows; ++r) {
       result[r] = mtx_.get(r, col);
@@ -190,31 +196,31 @@ public final class MatrixImplOjAlgo extends Matrix {
 
   @Override
   public void setRow(final int row, final double[] values) {
-    if (values.length != mtx_.countColumns()) {
+    if (values.length != mtx_.numColumns()) {
       throw new IllegalArgumentException("Invalid number of elements for row. Expected "
-              + mtx_.countColumns() + ", found " + values.length);
+              + mtx_.numColumns() + ", found " + values.length);
     }
 
-    for (int i = 0; i < mtx_.countColumns(); ++i) {
+    for (int i = 0; i < mtx_.numColumns(); ++i) {
       mtx_.set(row, i, values[i]);
     }
   }
 
   @Override
   public void setColumn(final int column, final double[] values) {
-    if (values.length != mtx_.countRows()) {
+    if (values.length != mtx_.numRows()) {
       throw new IllegalArgumentException("Invalid number of elements for column. Expected "
-              + mtx_.countRows() + ", found " + values.length);
+              + mtx_.numRows() + ", found " + values.length);
     }
 
-    for (int i = 0; i < mtx_.countRows(); ++i) {
+    for (int i = 0; i < mtx_.numRows(); ++i) {
+      // TODO: System.arraycopy()?
       mtx_.set(i, column, values[i]);
     }
   }
 
   @Override
   public MatrixType getMatrixType() {
-    return MatrixType.OJALGO;
+    return MatrixType.MTJ;
   }
-
 }
