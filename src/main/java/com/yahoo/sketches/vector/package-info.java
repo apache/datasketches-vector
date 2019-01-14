@@ -8,4 +8,4 @@
  * This is the parent package for all vector sketch algorithms. Any classes at this level are
  * used by more than one sub-package.
  */
-package com.yahoo.sketches;
+package com.yahoo.sketches.vector;

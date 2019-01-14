@@ -3,12 +3,12 @@
  * Licensed under the terms of the Apache License 2.0. See LICENSE file at the project root for terms.
  */
 
-package com.yahoo.sketches.decomposition;
+package com.yahoo.sketches.vector.decomposition;
 
 import static com.yahoo.memory.UnsafeUtil.unsafe;
 
 import com.yahoo.memory.Memory;
-import com.yahoo.sketches.MatrixFamily;
+import com.yahoo.sketches.vector.MatrixFamily;
 
 /**
  * This class defines the preamble items structure and provides basic utilities for some of the key fields.
@@ -39,12 +39,13 @@ import com.yahoo.sketches.MatrixFamily;
  *
  * @author Jon Malkin
  */
+@SuppressWarnings("restriction")
 public final class PreambleUtil {
 
   /**
    * The java line separator character as a String.
    */
-  public static final String LS = System.getProperty("line.separator");
+  private static final String LS = System.getProperty("line.separator");
 
   private PreambleUtil() {}
 
@@ -62,7 +63,6 @@ public final class PreambleUtil {
 
   // flag bit masks
   static final int EMPTY_FLAG_MASK        = 4;
-  static final int COMPENSATIVE_FLAG_MASK = 128;
 
   // Other constants
   static final int SER_VER                = 1;

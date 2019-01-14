@@ -4,23 +4,23 @@
  * for terms.
  */
 
-package com.yahoo.sketches.matrix;
+package com.yahoo.sketches.vector.matrix;
 
-import static com.yahoo.sketches.matrix.MatrixPreambleUtil.COMPACT_FLAG_MASK;
-import static com.yahoo.sketches.matrix.MatrixPreambleUtil.extractFamilyID;
-import static com.yahoo.sketches.matrix.MatrixPreambleUtil.extractFlags;
-import static com.yahoo.sketches.matrix.MatrixPreambleUtil.extractNumColumns;
-import static com.yahoo.sketches.matrix.MatrixPreambleUtil.extractNumColumnsUsed;
-import static com.yahoo.sketches.matrix.MatrixPreambleUtil.extractNumRows;
-import static com.yahoo.sketches.matrix.MatrixPreambleUtil.extractNumRowsUsed;
-import static com.yahoo.sketches.matrix.MatrixPreambleUtil.extractPreLongs;
-import static com.yahoo.sketches.matrix.MatrixPreambleUtil.extractSerVer;
+import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.COMPACT_FLAG_MASK;
+import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.extractFamilyID;
+import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.extractFlags;
+import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.extractNumColumns;
+import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.extractNumColumnsUsed;
+import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.extractNumRows;
+import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.extractNumRowsUsed;
+import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.extractPreLongs;
+import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.extractSerVer;
 
 import org.ojalgo.matrix.store.PrimitiveDenseStore;
 
 import com.yahoo.memory.Memory;
 import com.yahoo.memory.WritableMemory;
-import com.yahoo.sketches.MatrixFamily;
+import com.yahoo.sketches.vector.MatrixFamily;
 
 public final class MatrixImplOjAlgo extends Matrix {
   private PrimitiveDenseStore mtx_;
@@ -88,6 +88,7 @@ public final class MatrixImplOjAlgo extends Matrix {
     return new MatrixImplOjAlgo(mtx);
   }
 
+  @Override
   public Object getRawObject() {
     return mtx_;
   }
@@ -96,7 +97,7 @@ public final class MatrixImplOjAlgo extends Matrix {
   public byte[] toByteArray() {
     final int preLongs = 2;
     final long numElements = mtx_.count();
-    assert numElements == mtx_.countColumns() * mtx_.countRows();
+    assert numElements == (mtx_.countColumns() * mtx_.countRows());
 
     final int outBytes = (int) ((preLongs * Long.BYTES) + (numElements * Double.BYTES));
     final byte[] outByteArr = new byte[outBytes];
@@ -210,4 +211,10 @@ public final class MatrixImplOjAlgo extends Matrix {
       mtx_.set(i, column, values[i]);
     }
   }
+
+  @Override
+  public MatrixType getMatrixType() {
+    return MatrixType.OJALGO;
+  }
+
 }

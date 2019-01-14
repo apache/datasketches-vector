@@ -3,12 +3,12 @@
  * Licensed under the terms of the Apache License 2.0. See LICENSE file at the project root for terms.
  */
 
-package com.yahoo.sketches.matrix;
+package com.yahoo.sketches.vector.matrix;
 
 import static com.yahoo.memory.UnsafeUtil.unsafe;
 
 import com.yahoo.memory.Memory;
-import com.yahoo.sketches.MatrixFamily;
+import com.yahoo.sketches.vector.MatrixFamily;
 
 /**
  * This class defines the preamble items structure and provides basic utilities for some of the
@@ -37,12 +37,13 @@ import com.yahoo.sketches.MatrixFamily;
  *
  * @author Jon Malkin
  */
+@SuppressWarnings("restriction")
 public final class MatrixPreambleUtil {
 
   /**
    * The java line separator character as a String.
    */
-  public static final String LS = System.getProperty("line.separator");
+  static final String LS = System.getProperty("line.separator");
 
   private MatrixPreambleUtil() {}
 
@@ -195,7 +196,7 @@ public final class MatrixPreambleUtil {
    * @param mem the given Memory
    * @return the extracted prelongs value.
    */
-  static int getAndCheckPreLongs(final Memory mem) {
+  private static int getAndCheckPreLongs(final Memory mem) {
     final long cap = mem.getCapacity();
     if (cap < Long.BYTES) { throwNotBigEnough(cap, Long.BYTES); }
     final int preLongs = extractPreLongs(mem);

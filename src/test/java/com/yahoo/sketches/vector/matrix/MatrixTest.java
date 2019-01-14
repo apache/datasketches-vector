@@ -1,38 +1,41 @@
-package com.yahoo.sketches.matrix;
+/*
+ * Copyright 2017, Yahoo, Inc.
+ * Licensed under the terms of the Apache License 2.0. See LICENSE file at the project root for terms.
+ */
+
+package com.yahoo.sketches.vector.matrix;
 
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
+import org.testng.annotations.Test;
+
 import com.yahoo.memory.Memory;
 import com.yahoo.memory.WritableMemory;
-import com.yahoo.sketches.MatrixFamily;
-import org.testng.annotations.Test;
+import com.yahoo.sketches.vector.MatrixFamily;
 
 public class MatrixTest {
 
   @Test
   public void checkHeapify() {
-    final Matrix m = Matrix.builder().setType(MatrixBuilder.Algo.OJALGO).build(3, 3);
+    final Matrix m = Matrix.builder().setType(MatrixType.OJALGO).build(3, 3);
     final byte[] bytes = m.toByteArray();
     final Memory mem = Memory.wrap(bytes);
     println(MatrixPreambleUtil.preambleToString(mem));
 
-    Matrix tgt = Matrix.heapify(mem, MatrixBuilder.Algo.OJALGO);
+    final Matrix tgt = Matrix.heapify(mem, MatrixType.OJALGO);
     assertTrue(tgt instanceof MatrixImplOjAlgo);
     checkMatrixEquality(m, tgt);
-
-    tgt = Matrix.heapify(mem, MatrixBuilder.Algo.NATIVE);
-    assertNull(tgt);
   }
 
   @Test
   public void checkWrap() {
     assertNull(Matrix.wrap(null));
 
-    final Matrix src = Matrix.builder().setType(MatrixBuilder.Algo.OJALGO).build(3, 3);
+    final Matrix src = Matrix.builder().setType(MatrixType.OJALGO).build(3, 3);
     final Object obj = src.getRawObject();
     final Matrix tgt = Matrix.wrap(obj);
     assertTrue(tgt instanceof MatrixImplOjAlgo);
@@ -69,15 +72,15 @@ public class MatrixTest {
 
     // matrix subsets
     expectedSize = (MatrixFamily.MATRIX.getMaxPreLongs() * Long.BYTES)
-            + (5 * 3) * Double.BYTES;
+            + ((5 * 3) * Double.BYTES);
     assertEquals(m.getCompactSizeBytes(5, 3), expectedSize);
 
     expectedSize = (MatrixFamily.MATRIX.getMaxPreLongs() * Long.BYTES)
-            + (7 * 2) * Double.BYTES;
+            + ((7 * 2) * Double.BYTES);
     assertEquals(m.getCompactSizeBytes(7, 2), expectedSize);
 
     expectedSize = (MatrixFamily.MATRIX.getMaxPreLongs() * Long.BYTES)
-            + (2 * 2) * Double.BYTES;
+            + ((2 * 2) * Double.BYTES);
     assertEquals(m.getCompactSizeBytes(2, 2), expectedSize);
   }
 
@@ -152,6 +155,10 @@ public class MatrixTest {
     }
   }
 
+  /**
+   * println the message
+   * @param msg the message
+   */
   static void println(final String msg) {
     //System.out.println(msg);
   }

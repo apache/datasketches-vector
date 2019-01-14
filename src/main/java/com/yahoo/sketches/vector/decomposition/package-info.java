@@ -11,4 +11,4 @@
  * <p>These sketches are mergeable and can be serialized and deserialized to/from a compact
  * form.</p>
  */
-package com.yahoo.sketches.decomposition;
+package com.yahoo.sketches.vector.decomposition;

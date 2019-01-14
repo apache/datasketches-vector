@@ -1,4 +1,9 @@
-package com.yahoo.sketches.decomposition;
+/*
+ * Copyright 2017, Yahoo, Inc.
+ * Licensed under the terms of the Apache License 2.0. See LICENSE file at the project root for terms.
+ */
+
+package com.yahoo.sketches.vector.decomposition;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
@@ -8,11 +13,12 @@ import static org.testng.Assert.fail;
 
 import java.util.Arrays;
 
+import org.testng.annotations.Test;
+
 import com.yahoo.memory.Memory;
 import com.yahoo.memory.WritableMemory;
-import com.yahoo.sketches.MatrixFamily;
-import com.yahoo.sketches.matrix.Matrix;
-import org.testng.annotations.Test;
+import com.yahoo.sketches.vector.MatrixFamily;
+import com.yahoo.sketches.vector.matrix.Matrix;
 
 public class FrequentDirectionsTest {
   @Test
@@ -55,14 +61,32 @@ public class FrequentDirectionsTest {
   }
 
   @Test
-  public void checkUpdate() {
+  public void checkSymmUpdate() {
     final int k = 4;
     final int d = 16; // should be > 2k
     final FrequentDirections fd = FrequentDirections.newInstance(k, d);
+    fd.setSVDAlgo(SVDAlgo.SYM); // default, but force anyway
+
+    runUpdateTest(fd);
+  }
+
+  @Test
+  public void checkFullSVDUpdate() {
+    final int k = 4;
+    final int d = 16; // should be > 2k
+    final FrequentDirections fd = FrequentDirections.newInstance(k, d);
+    fd.setSVDAlgo(SVDAlgo.FULL);
+
+    runUpdateTest(fd);
+  }
+
+  private void runUpdateTest(final FrequentDirections fd) {
+    final int k = fd.getK();
+    final int d = fd.getD();
 
     // creates matrix with increasing values along diagonal
     final double[] input = new double[d];
-    for (int i = 0; i < 2 * k; ++i) {
+    for (int i = 0; i < (2 * k); ++i) {
       if (i > 0) {
         input[i - 1] = 0.0;
       }
@@ -76,16 +100,9 @@ public class FrequentDirectionsTest {
     input[(2 * k) - 1] = 0.0;
     input[2 * k] = 2.0 * k;
     fd.update(input); // trigger reduceRank(), then add 1 more row
-    assertEquals(fd.getNumRows(), k + 1);
-
-    fd.reset();
-    assertTrue(fd.isEmpty());
-    fd.forceReduceRank(); // should be a no-op
-    assertTrue(fd.isEmpty());
-
-    println(fd.toString());
-    println(fd.toString(true));
+    assertEquals(fd.getNumRows(), k);
   }
+
 
   @Test
   public void updateWithTooFewDimensions() {
@@ -134,26 +151,44 @@ public class FrequentDirectionsTest {
     assertEquals(fd2.getN(), initialRows);
 
     fd1.update(fd2);
-    final int expectedRows = ((2 * initialRows) % k) + k; // assumes 2 * initialRows > k
+    final int expectedRows = ((2 * initialRows) % k) + k - 1; // assumes 2 * initialRows > k
     assertEquals(fd1.getNumRows(), expectedRows);
     assertEquals(fd1.getN(), 2 * initialRows);
 
-    Matrix result = fd1.getResult(false);
+    final Matrix result = fd1.getResult(false);
     assertNotNull(result);
-    assertEquals(result.getNumRows(), expectedRows);
+    assertEquals(result.getNumRows(), 2 * k);
 
     println(fd1.toString(true, true, true));
   }
 
   @Test
-  public void checkCompensativeResult() {
+  public void checkCompensativeResultSymSVD() {
     final int k = 4;
     final int d = 10; // should be > 2k
     final FrequentDirections fd = FrequentDirections.newInstance(k, d);
+    fd.setSVDAlgo(SVDAlgo.SYM);
+
+    runCompensativeResultTest(fd);
+  }
+
+  @Test
+  public void checkCompensativeResultFullSVD() {
+    final int k = 4;
+    final int d = 10; // should be > 2k
+    final FrequentDirections fd = FrequentDirections.newInstance(k, d);
+    fd.setSVDAlgo(SVDAlgo.FULL);
+
+    runCompensativeResultTest(fd);
+  }
+
+  private void runCompensativeResultTest(final FrequentDirections fd) {
+    final int d = fd.getD();
+    final int k = fd.getK();
 
     // diagonal matrix for easy checking
     final double[] input = new double[d];
-    for (int i = 0; i < k + 1; ++i) {
+    for (int i = 0; i < (k + 1); ++i) {
       if (i > 0) {
         input[i - 1] = 0.0;
       }
@@ -162,16 +197,15 @@ public class FrequentDirectionsTest {
     }
 
     Matrix m = fd.getResult();
-    for (int i = 0; i < k + 1; ++i) {
+    for (int i = 0; i < (k + 1); ++i) {
       assertEquals(m.getElement(i,i), 1.0 * (i + 1), 1e-6);
     }
-
-    final Matrix p = fd.getProjectionMatrix();
-    double[] sv = fd.getSingularValues(false);
 
     // without compensation, but force rank reduction and check projection at the same time
     fd.forceReduceRank();
     m = fd.getResult();
+    final Matrix p = fd.getProjectionMatrix();
+    double[] sv = fd.getSingularValues(false);
     for (int i = k; i > 1; --i) {
       final double val = Math.abs(m.getElement(k - i, i));
       final double expected = Math.sqrt(((i + 1) * (i + 1)) - fd.getSvAdjustment());
@@ -179,8 +213,8 @@ public class FrequentDirectionsTest {
       assertEquals(sv[k - i], expected, 1e-10);
       assertEquals(Math.abs(p.getElement(k - i, i)), 1.0, 1e-6);
     }
-    assertEquals(m.getElement(k, 1), 0.0);
-    assertEquals(p.getElement(k, 1), 0.0);
+    assertEquals(m.getElement(k, 1), 0.0, 0.0); // might return -0.0
+    assertEquals(p.getElement(k, 1), 0.0, 0.0); // might return -0.0
 
     // with compensation
     m = fd.getResult(true);
@@ -258,11 +292,11 @@ public class FrequentDirectionsTest {
     assertEquals(rebuilt.getK(), fd.getK());
 
     // add another k rows and serialize, compressing this time
-    for (int i = k; i < 2 * k - 1; ++i) {
+    for (int i = k; i < ((2 * k) - 1); ++i) {
       input[i] = i * 1.0;
       fd.update(input);
     }
-    assertEquals(fd.getNumRows(), 2 * k - 1);
+    assertEquals(fd.getNumRows(), (2 * k) - 1);
     sketchBytes = fd.toByteArray();
     mem = Memory.wrap(sketchBytes);
     rebuilt = FrequentDirections.heapify(mem);
@@ -280,7 +314,7 @@ public class FrequentDirectionsTest {
     byte[] sketchBytes = fd.toByteArray();
     WritableMemory mem = WritableMemory.wrap(sketchBytes);
 
-    FrequentDirections rebuilt = FrequentDirections.heapify(mem);
+    final FrequentDirections rebuilt = FrequentDirections.heapify(mem);
     assertTrue(rebuilt.isEmpty());
     println(PreambleUtil.preambleToString(mem));
 
@@ -326,6 +360,10 @@ public class FrequentDirectionsTest {
     }
   }
 
+  /**
+   * println the message
+   * @param msg the message
+   */
   private void println(final String msg) {
     //System.out.println(msg);
   }

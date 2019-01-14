@@ -79,7 +79,7 @@
     <scm>
         <connection>scm:git:ssh://git@github.com/DataSketches/sketches-vector.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/DataSketches/sketches-vector.git</developerConnection>
-        <url>https://github.com/DataSketches/sketches-vector.git</url>
+        <url>https://github.com/DataSketches/sketches-vector</url>
       <tag>HEAD</tag>
   </scm>
 
@@ -92,6 +92,16 @@
             <id>jcenter</id>
             <name>bintray</name>
             <url>https://jcenter.bintray.com</url>
+        </repository>
+        <repository>
+            <id>sonatype-releases</id>
+            <url>https://oss.sonatype.org/content/repositories/releases/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </repository>
     </repositories>
 
@@ -139,7 +149,7 @@
         <dependency>
             <groupId>org.ojalgo</groupId>
             <artifactId>ojalgo</artifactId>
-            <version>44.0.0</version>
+            <version>45.0.0</version>
         </dependency>
 
         <dependency>

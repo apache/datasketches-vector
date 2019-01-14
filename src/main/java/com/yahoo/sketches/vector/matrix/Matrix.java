@@ -4,15 +4,14 @@
  * for terms.
  */
 
-package com.yahoo.sketches.matrix;
+package com.yahoo.sketches.vector.matrix;
 
-import static com.yahoo.sketches.matrix.MatrixPreambleUtil.LS;
+import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.LS;
 
 import org.ojalgo.matrix.store.PrimitiveDenseStore;
 
 import com.yahoo.memory.Memory;
-import com.yahoo.sketches.MatrixFamily;
-
+import com.yahoo.sketches.vector.MatrixFamily;
 
 /**
  * Provides an implementation-agnostic wrapper around Matrix classes.
@@ -32,7 +31,7 @@ public abstract class Matrix {
    * @param type Matrix implementation type to use
    * @return The heapified matrix
    */
-  public static Matrix heapify(final Memory srcMem, final MatrixBuilder.Algo type) {
+  public static Matrix heapify(final Memory srcMem, final MatrixType type) {
     switch (type) {
       case OJALGO:
         return MatrixImplOjAlgo.heapifyInstance(srcMem);
@@ -156,7 +155,7 @@ public abstract class Matrix {
   }
 
   /**
-   * Gets serialized size of the Matrix in cmpact form, in bytes.
+   * Gets serialized size of the Matrix in compact form, in bytes.
    * @param rows Number of rows to select for writing
    * @param cols Number of columns to select for writing
    * @return Number of bytes needed to serialize the first (rows, cols) of this Matrix
@@ -213,4 +212,6 @@ public abstract class Matrix {
 
     return sb.toString();
   }
+
+  public abstract MatrixType getMatrixType();
 }

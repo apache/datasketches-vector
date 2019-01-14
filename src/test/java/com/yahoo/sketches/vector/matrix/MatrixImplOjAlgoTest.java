@@ -1,12 +1,18 @@
-package com.yahoo.sketches.matrix;
+/*
+ * Copyright 2017, Yahoo, Inc.
+ * Licensed under the terms of the Apache License 2.0. See LICENSE file at the project root for terms.
+ */
+
+package com.yahoo.sketches.vector.matrix;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.fail;
 
-import com.yahoo.memory.Memory;
-import com.yahoo.memory.WritableMemory;
 import org.ojalgo.matrix.store.PrimitiveDenseStore;
 import org.testng.annotations.Test;
+
+import com.yahoo.memory.Memory;
+import com.yahoo.memory.WritableMemory;
 
 public class MatrixImplOjAlgoTest {
   @Test
@@ -34,7 +40,7 @@ public class MatrixImplOjAlgoTest {
 
     for (int i = 0; i < nRows; ++i) {
       for (int j = 0; j < nCols; ++j) {
-        double val = m.getElement(i, j);
+        final double val = m.getElement(i, j);
         if (i == j) {
           assertEquals(val, i + 1.0);
         } else {
@@ -70,7 +76,7 @@ public class MatrixImplOjAlgoTest {
     Memory mem = Memory.wrap(mtxBytes);
     Matrix tgt = MatrixImplOjAlgo.heapifyInstance(mem);
     for (int c = 0; c < nCols; ++c) {
-      for (int r = 0; r < nRows - 1; ++r) {
+      for (int r = 0; r < (nRows - 1); ++r) {
         assertEquals(tgt.getElement(r, c), m.getElement(r, c)); // equal here
       }
       // assuming nRows - 1 so check only the last row as being 0
@@ -195,9 +201,9 @@ public class MatrixImplOjAlgoTest {
    * @param nCols number of columns
    * @return PrimitiveDenseStore, suitable for direct use or wrapping
    */
-  private Matrix generateIncreasingEye(final int nRows, final int nCols) {
+  private static Matrix generateIncreasingEye(final int nRows, final int nCols) {
     final Matrix m = MatrixImplOjAlgo.newInstance(nRows, nCols);
-    for (int i = 0; i < nRows && i < nCols; ++i) {
+    for (int i = 0; (i < nRows) && (i < nCols); ++i) {
       m.setElement(i, i, 1.0 + i);
     }
     return m;

@@ -4,33 +4,14 @@
  * for terms.
  */
 
-package com.yahoo.sketches.matrix;
+package com.yahoo.sketches.vector.matrix;
 
 /**
  * Provides a builder for Matrix objects.
  */
 public class MatrixBuilder {
-  public enum Algo {
-    OJALGO(1, "ojAlgo"),
-    NATIVE(2, "native");
 
-    private int id_;
-    private String name_;
-
-    Algo(final int id, final String name) {
-      id_ = id;
-      name_ = name;
-    }
-
-    public int getId() { return id_; }
-
-    public String getName() { return name_; }
-
-    @Override
-    public String toString() { return name_; }
-  }
-
-  private Algo type_ = Algo.OJALGO; // default type
+  private MatrixType type_ = MatrixType.OJALGO; // default type
 
   public MatrixBuilder() {}
 
@@ -39,16 +20,16 @@ public class MatrixBuilder {
    * @param type One of the supported types
    * @return This MatrixBuilder object
    */
-  public MatrixBuilder setType(final Algo type) {
+  public MatrixBuilder setType(final MatrixType type) {
     type_ = type;
     return this;
   }
 
   /**
    * Returns a value from an enum defining the type of object backing any Matrix objects created.
-   * @return An item from the Algo enum.
+   * @return An item from the MatrixType enum.
    */
-  public Algo getBackingType() {
+  public MatrixType getBackingType() {
     return type_;
   }
 
@@ -64,9 +45,8 @@ public class MatrixBuilder {
       case OJALGO:
         return MatrixImplOjAlgo.newInstance(numRows, numCols);
 
-      case NATIVE:
       default:
-        throw new IllegalArgumentException("Only Algo.OJALGO is currently supported Matrix type");
+        throw new IllegalArgumentException("OJALGO is currently the only supported MatrixTypes");
     }
   }
 }
