@@ -165,18 +165,16 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
 
     for (int i = 0; i < numSISVDIter_; ++i) {
       A.multiply(block_, T_);
-      A.transpose().multiply(T_, block_);
 
       // again, just for stability
-      qr_.decompose(block_);
+      qr_.decompose(T_.premultiply(A.transpose()));
       qr_.getQ().supplyTo(block_);
     }
 
     // Rayleigh-Ritz postprocessing
-    A.multiply(block_, T_);
 
     final SingularValue<Double> svd = SingularValue.make(T_);
-    svd.compute(T_);
+    svd.compute(block_.premultiply(A));
 
     svd.getSingularValues(sv_);
 
@@ -188,14 +186,12 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
   }
 
   private void computeSymmEigSVD(final MatrixStore<Double> A, final boolean computeVectors) {
-    if (T_ == null) {
-      T_ = PrimitiveDenseStore.FACTORY.makeZero(n_, n_);
+    if (evd_ == null) {
       evd_ = Eigenvalue.PRIMITIVE.make(n_, true);
     }
 
     // want left singular vectors U, aka eigenvectors of AA^T -- so compute that
-    A.multiply(A.transpose(), T_);
-    evd_.decompose(T_);
+    evd_.decompose(A.transpose().premultiply(A));
 
     // TODO: can we only use k_ values?
     final double[] ev = new double[n_];
