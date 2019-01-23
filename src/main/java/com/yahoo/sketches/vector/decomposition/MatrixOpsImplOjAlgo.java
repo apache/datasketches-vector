@@ -111,7 +111,7 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
     }
 
     // store the result back in A
-    S_.multiply(Vt_).supplyTo((PrimitiveDenseStore) A.getRawObject());
+    S_.multiply(Vt_, (PrimitiveDenseStore) A.getRawObject());
 
     return svAdjustment;
   }
@@ -132,7 +132,7 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
       S_.set(i, i, 0.0);
     }
 
-    S_.multiply(Vt_).supplyTo(result);
+    S_.multiply(Vt_, result);
 
     return Matrix.wrap(result);
   }
@@ -164,19 +164,17 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
     qr_.getQ().supplyTo(block_);
 
     for (int i = 0; i < numSISVDIter_; ++i) {
-      A.multiply(block_).supplyTo(T_);
-      A.transpose().multiply(T_).supplyTo(block_);
+      A.multiply(block_, T_);
 
       // again, just for stability
-      qr_.decompose(block_);
+      qr_.decompose(T_.premultiply(A.transpose()));
       qr_.getQ().supplyTo(block_);
     }
 
     // Rayleigh-Ritz postprocessing
-    A.multiply(block_).supplyTo(T_);
 
     final SingularValue<Double> svd = SingularValue.make(T_);
-    svd.compute(T_);
+    svd.compute(block_.premultiply(A));
 
     svd.getSingularValues(sv_);
 
@@ -188,14 +186,12 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
   }
 
   private void computeSymmEigSVD(final MatrixStore<Double> A, final boolean computeVectors) {
-    if (T_ == null) {
-      T_ = PrimitiveDenseStore.FACTORY.makeZero(n_, n_);
+    if (evd_ == null) {
       evd_ = Eigenvalue.PRIMITIVE.make(n_, true);
     }
 
     // want left singular vectors U, aka eigenvectors of AA^T -- so compute that
-    A.multiply(A.transpose()).supplyTo(T_);
-    evd_.decompose(T_);
+    evd_.decompose(A.transpose().premultiply(A));
 
     // TODO: can we only use k_ values?
     final double[] ev = new double[n_];
@@ -207,7 +203,7 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
     }
 
     if (computeVectors) {
-      S_.multiply(evd_.getV().transpose()).multiply(A).supplyTo(Vt_);
+      S_.multiply(evd_.getV().transpose()).multiply(A, Vt_);
     }
   }
 }
