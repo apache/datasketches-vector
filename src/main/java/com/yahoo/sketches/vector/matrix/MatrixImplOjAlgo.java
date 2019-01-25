@@ -150,7 +150,7 @@ public final class MatrixImplOjAlgo extends Matrix {
     long offsetBytes = preLongs * Long.BYTES;
     for (int c = 0; c < numCols; ++c) {
       for (int r = 0; r < numRows; ++r) {
-        memOut.putDouble(offsetBytes, mtx_.get(r, c));
+        memOut.putDouble(offsetBytes, mtx_.doubleValue(r, c));
         offsetBytes += Double.BYTES;
       }
     }
@@ -160,7 +160,7 @@ public final class MatrixImplOjAlgo extends Matrix {
 
   @Override
   public double getElement(final int row, final int col) {
-    return mtx_.get(row, col);
+    return mtx_.doubleValue(row, col);
   }
 
   @Override
@@ -168,7 +168,7 @@ public final class MatrixImplOjAlgo extends Matrix {
     final int cols = (int) mtx_.countColumns();
     final double[] result = new double[cols];
     for (int c = 0; c < cols; ++c) {
-      result[c] = mtx_.get(row, c);
+      result[c] = mtx_.doubleValue(row, c);
     }
     return result;
   }
@@ -178,7 +178,7 @@ public final class MatrixImplOjAlgo extends Matrix {
     final int rows = (int) mtx_.countRows();
     final double[] result = new double[rows];
     for (int r = 0; r < rows; ++r) {
-      result[r] = mtx_.get(r, col);
+      result[r] = mtx_.doubleValue(r, col);
     }
     return result;
   }
