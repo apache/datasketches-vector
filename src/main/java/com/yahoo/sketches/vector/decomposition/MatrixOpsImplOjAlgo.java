@@ -25,7 +25,9 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
 
   // work objects for Symmetric EVD
   private Eigenvalue<Double> evd_;
-
+  
+  // work object for full SVD
+  private SingularValue<Double> svd_;
 
   transient private SparseStore<Double> S_; // to hold singular value matrix
 
@@ -138,14 +140,17 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
   }
 
   private void computeFullSVD(final MatrixStore<Double> A, final boolean computeVectors) {
-    final SingularValue<Double> svd = SingularValue.make(A);
-    svd.compute(A);
-
-    svd.getSingularValues(sv_);
+    if (svd_ == null) {
+      svd_ = SingularValue.make(A);
+    }
 
     if (computeVectors) {
-      svd.getQ2().transpose().supplyTo(Vt_);
+      svd_.decompose(A);
+      svd_.getQ2().transpose().supplyTo(Vt_);
+    } else {
+      svd_.computeValuesOnly(A);
     }
+    svd_.getSingularValues(sv_);
   }
 
   private void computeSISVD(final MatrixStore<Double> A, final boolean computeVectors) {
