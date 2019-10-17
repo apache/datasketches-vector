@@ -1,38 +1,52 @@
 /*
- * Copyright 2017, Yahoo, Inc.
- * Licensed under the terms of the Apache License 2.0. See LICENSE file at the project root for terms.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
-package com.yahoo.sketches.vector.decomposition;
+package org.apache.datasketches.vector.decomposition;
 
-import static com.yahoo.memory.UnsafeUtil.LS;
-import static com.yahoo.sketches.vector.decomposition.PreambleUtil.EMPTY_FLAG_MASK;
-import static com.yahoo.sketches.vector.decomposition.PreambleUtil.SER_VER;
-import static com.yahoo.sketches.vector.decomposition.PreambleUtil.extractFamilyID;
-import static com.yahoo.sketches.vector.decomposition.PreambleUtil.extractFlags;
-import static com.yahoo.sketches.vector.decomposition.PreambleUtil.extractK;
-import static com.yahoo.sketches.vector.decomposition.PreambleUtil.extractN;
-import static com.yahoo.sketches.vector.decomposition.PreambleUtil.extractNumColumns;
-import static com.yahoo.sketches.vector.decomposition.PreambleUtil.extractNumRows;
-import static com.yahoo.sketches.vector.decomposition.PreambleUtil.extractSVAdjustment;
-import static com.yahoo.sketches.vector.decomposition.PreambleUtil.extractSerVer;
-import static com.yahoo.sketches.vector.decomposition.PreambleUtil.getAndCheckPreLongs;
-import static com.yahoo.sketches.vector.decomposition.PreambleUtil.insertFamilyID;
-import static com.yahoo.sketches.vector.decomposition.PreambleUtil.insertFlags;
-import static com.yahoo.sketches.vector.decomposition.PreambleUtil.insertK;
-import static com.yahoo.sketches.vector.decomposition.PreambleUtil.insertN;
-import static com.yahoo.sketches.vector.decomposition.PreambleUtil.insertNumColumns;
-import static com.yahoo.sketches.vector.decomposition.PreambleUtil.insertNumRows;
-import static com.yahoo.sketches.vector.decomposition.PreambleUtil.insertPreLongs;
-import static com.yahoo.sketches.vector.decomposition.PreambleUtil.insertSVAdjustment;
-import static com.yahoo.sketches.vector.decomposition.PreambleUtil.insertSerVer;
+import static org.apache.datasketches.memory.UnsafeUtil.LS;
+import static org.apache.datasketches.vector.decomposition.PreambleUtil.EMPTY_FLAG_MASK;
+import static org.apache.datasketches.vector.decomposition.PreambleUtil.SER_VER;
+import static org.apache.datasketches.vector.decomposition.PreambleUtil.extractFamilyID;
+import static org.apache.datasketches.vector.decomposition.PreambleUtil.extractFlags;
+import static org.apache.datasketches.vector.decomposition.PreambleUtil.extractK;
+import static org.apache.datasketches.vector.decomposition.PreambleUtil.extractN;
+import static org.apache.datasketches.vector.decomposition.PreambleUtil.extractNumColumns;
+import static org.apache.datasketches.vector.decomposition.PreambleUtil.extractNumRows;
+import static org.apache.datasketches.vector.decomposition.PreambleUtil.extractSVAdjustment;
+import static org.apache.datasketches.vector.decomposition.PreambleUtil.extractSerVer;
+import static org.apache.datasketches.vector.decomposition.PreambleUtil.getAndCheckPreLongs;
+import static org.apache.datasketches.vector.decomposition.PreambleUtil.insertFamilyID;
+import static org.apache.datasketches.vector.decomposition.PreambleUtil.insertFlags;
+import static org.apache.datasketches.vector.decomposition.PreambleUtil.insertK;
+import static org.apache.datasketches.vector.decomposition.PreambleUtil.insertN;
+import static org.apache.datasketches.vector.decomposition.PreambleUtil.insertNumColumns;
+import static org.apache.datasketches.vector.decomposition.PreambleUtil.insertNumRows;
+import static org.apache.datasketches.vector.decomposition.PreambleUtil.insertPreLongs;
+import static org.apache.datasketches.vector.decomposition.PreambleUtil.insertSVAdjustment;
+import static org.apache.datasketches.vector.decomposition.PreambleUtil.insertSerVer;
 
-import com.yahoo.memory.Memory;
-import com.yahoo.memory.WritableMemory;
-import com.yahoo.sketches.vector.MatrixFamily;
-import com.yahoo.sketches.vector.matrix.Matrix;
-import com.yahoo.sketches.vector.matrix.MatrixBuilder;
-import com.yahoo.sketches.vector.matrix.MatrixType;
+import org.apache.datasketches.memory.Memory;
+import org.apache.datasketches.memory.WritableMemory;
+import org.apache.datasketches.vector.MatrixFamily;
+import org.apache.datasketches.vector.matrix.Matrix;
+import org.apache.datasketches.vector.matrix.MatrixBuilder;
+import org.apache.datasketches.vector.matrix.MatrixType;
 
 /**
  * This class implements the Frequent Directions algorithm proposed by Edo Liberty in "Simple and

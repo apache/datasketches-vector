@@ -1,26 +1,39 @@
 /*
- * Copyright 2017, Yahoo! Inc.
- * Licensed under the terms of the Apache License 2.0. See LICENSE file at the project root
- * for terms.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
-package com.yahoo.sketches.vector.matrix;
+package org.apache.datasketches.vector.matrix;
 
-import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.COMPACT_FLAG_MASK;
-import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.extractFamilyID;
-import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.extractFlags;
-import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.extractNumColumns;
-import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.extractNumColumnsUsed;
-import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.extractNumRows;
-import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.extractNumRowsUsed;
-import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.extractPreLongs;
-import static com.yahoo.sketches.vector.matrix.MatrixPreambleUtil.extractSerVer;
+import static org.apache.datasketches.vector.matrix.MatrixPreambleUtil.COMPACT_FLAG_MASK;
+import static org.apache.datasketches.vector.matrix.MatrixPreambleUtil.extractFamilyID;
+import static org.apache.datasketches.vector.matrix.MatrixPreambleUtil.extractFlags;
+import static org.apache.datasketches.vector.matrix.MatrixPreambleUtil.extractNumColumns;
+import static org.apache.datasketches.vector.matrix.MatrixPreambleUtil.extractNumColumnsUsed;
+import static org.apache.datasketches.vector.matrix.MatrixPreambleUtil.extractNumRows;
+import static org.apache.datasketches.vector.matrix.MatrixPreambleUtil.extractNumRowsUsed;
+import static org.apache.datasketches.vector.matrix.MatrixPreambleUtil.extractPreLongs;
+import static org.apache.datasketches.vector.matrix.MatrixPreambleUtil.extractSerVer;
 
 import org.ojalgo.matrix.store.PrimitiveDenseStore;
 
-import com.yahoo.memory.Memory;
-import com.yahoo.memory.WritableMemory;
-import com.yahoo.sketches.vector.MatrixFamily;
+import org.apache.datasketches.memory.Memory;
+import org.apache.datasketches.memory.WritableMemory;
+import org.apache.datasketches.vector.MatrixFamily;
 
 public final class MatrixImplOjAlgo extends Matrix {
   private PrimitiveDenseStore mtx_;
