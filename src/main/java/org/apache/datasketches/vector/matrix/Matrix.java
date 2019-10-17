@@ -177,9 +177,9 @@ public abstract class Matrix {
     final int nRows = Math.min(rows, numRows_);
     final int nCols = Math.min(cols, numCols_);
 
-    if (nRows < 1 || nCols < 1) {
+    if ((nRows < 1) || (nCols < 1)) {
       return MatrixFamily.MATRIX.getMinPreLongs() * Long.BYTES;
-    } else if (nRows == numRows_ && nCols == numCols_) {
+    } else if ((nRows == numRows_) && (nCols == numCols_)) {
       return getSizeBytes();
     }
 
@@ -226,5 +226,9 @@ public abstract class Matrix {
     return sb.toString();
   }
 
+  /**
+   * Gets the matrix type
+   * @return the matrix type
+   */
   public abstract MatrixType getMatrixType();
 }

@@ -24,6 +24,7 @@ import static org.testng.Assert.assertNotNull;
 
 import org.testng.annotations.Test;
 
+@SuppressWarnings("javadoc")
 public class MatrixBuilderTest {
   @Test
   public void checkBuild() {

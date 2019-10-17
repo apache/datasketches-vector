@@ -28,6 +28,7 @@ import org.apache.datasketches.vector.matrix.Matrix;
 import org.apache.datasketches.vector.matrix.MatrixBuilder;
 import org.apache.datasketches.vector.matrix.MatrixType;
 
+@SuppressWarnings("javadoc")
 public class MatrixOpsTest {
 
   @Test
@@ -70,7 +71,7 @@ public class MatrixOpsTest {
     final Matrix A = generateIncreasingEye(d, 2 * k);
     final MatrixOps mo = MatrixOps.newInstance(A, SVDAlgo.FULL, k);
 
-    Matrix B = generateIncreasingEye(d, 2 * k + 1);
+    Matrix B = generateIncreasingEye(d, (2 * k) + 1);
     try {
       mo.svd(B, true);
       fail();
@@ -88,7 +89,7 @@ public class MatrixOpsTest {
 
   }
 
-  private void compareSingularValues(final double[] A, final double[] B, final int n) {
+  private static void compareSingularValues(final double[] A, final double[] B, final int n) {
     assertEquals(A.length, B.length);
 
     for (int i = 0; i < n; ++i) {
@@ -97,7 +98,7 @@ public class MatrixOpsTest {
   }
 
 
-  private void compareMatrixElementMagnitudes(final Matrix A, final Matrix B, final int n) {
+  private static void compareMatrixElementMagnitudes(final Matrix A, final Matrix B, final int n) {
     assertEquals(A.getNumColumns(), B.getNumColumns());
     assertEquals(A.getNumRows(), B.getNumRows());
 

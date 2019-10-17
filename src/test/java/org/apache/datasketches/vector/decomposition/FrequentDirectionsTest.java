@@ -34,7 +34,9 @@ import org.apache.datasketches.memory.WritableMemory;
 import org.apache.datasketches.vector.MatrixFamily;
 import org.apache.datasketches.vector.matrix.Matrix;
 
+@SuppressWarnings("javadoc")
 public class FrequentDirectionsTest {
+
   @Test
   public void instantiateFD() {
     final int k = 32;
@@ -94,7 +96,7 @@ public class FrequentDirectionsTest {
     runUpdateTest(fd);
   }
 
-  private void runUpdateTest(final FrequentDirections fd) {
+  private static void runUpdateTest(final FrequentDirections fd) {
     final int k = fd.getK();
     final int d = fd.getD();
 
@@ -165,7 +167,7 @@ public class FrequentDirectionsTest {
     assertEquals(fd2.getN(), initialRows);
 
     fd1.update(fd2);
-    final int expectedRows = ((2 * initialRows) % k) + k - 1; // assumes 2 * initialRows > k
+    final int expectedRows = (((2 * initialRows) % k) + k) - 1; // assumes 2 * initialRows > k
     assertEquals(fd1.getNumRows(), expectedRows);
     assertEquals(fd1.getN(), 2 * initialRows);
 
@@ -196,7 +198,7 @@ public class FrequentDirectionsTest {
     runCompensativeResultTest(fd);
   }
 
-  private void runCompensativeResultTest(final FrequentDirections fd) {
+  private static void runCompensativeResultTest(final FrequentDirections fd) {
     final int d = fd.getD();
     final int k = fd.getK();
 

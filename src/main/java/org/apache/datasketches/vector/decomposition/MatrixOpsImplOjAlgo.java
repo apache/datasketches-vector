@@ -30,7 +30,6 @@ import org.ojalgo.matrix.store.SparseStore;
 import org.ojalgo.random.Normal;
 
 import org.apache.datasketches.vector.matrix.Matrix;
-import org.apache.datasketches.vector.matrix.MatrixImplOjAlgo;
 import org.apache.datasketches.vector.matrix.MatrixType;
 
 class MatrixOpsImplOjAlgo extends MatrixOps {
@@ -44,7 +43,7 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
 
   // work objects for Symmetric EVD
   private Eigenvalue<Double> evd_;
-  
+
   // work object for full SVD
   private SingularValue<Double> svd_;
 
@@ -68,7 +67,7 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
       throw new IllegalArgumentException("A.numColumns() != d_");
     }
 
-    if (computeVectors && Vt_ == null) {
+    if (computeVectors && (Vt_ == null)) {
       Vt_ = PrimitiveDenseStore.FACTORY.makeZero(n_, d_);
       S_ = SparseStore.makePrimitive(sv_.length, sv_.length);
     }
@@ -98,7 +97,7 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
 
   @Override
   Matrix getVt() {
-    return MatrixImplOjAlgo.wrap(Vt_);
+    return Matrix.wrap(Vt_);
   }
 
   @Override
@@ -111,9 +110,9 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
       double medianSVSq = sv_[k_ - 1]; // (l_/2)th item, not yet squared
       medianSVSq *= medianSVSq;
       svAdjustment += medianSVSq; // always track, even if not using compensative mode
-      for (int i = 0; i < k_ - 1; ++i) {
+      for (int i = 0; i < (k_ - 1); ++i) {
         final double val = sv_[i];
-        final double adjSqSV = val * val - medianSVSq;
+        final double adjSqSV = (val * val) - medianSVSq;
         S_.set(i, i, adjSqSV < 0 ? 0.0 : Math.sqrt(adjSqSV)); // just to be safe
       }
       for (int i = k_ - 1; i < S_.countColumns(); ++i) {
@@ -144,9 +143,9 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
             = PrimitiveDenseStore.FACTORY.copy((PrimitiveDenseStore) A.getRawObject());
     svd(Matrix.wrap(result), true);
 
-    for (int i = 0; i < k_ - 1; ++i) {
+    for (int i = 0; i < (k_ - 1); ++i) {
       final double val = sv_[i];
-      final double adjSV = Math.sqrt(val * val + svAdjustment);
+      final double adjSV = Math.sqrt((val * val) + svAdjustment);
       S_.set(i, i, adjSV);
     }
     for (int i = k_ - 1; i < S_.countColumns(); ++i) {
@@ -223,7 +222,7 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
     for (int i = 0; i < ev.length; ++i) {
       final double val = Math.sqrt(ev[i]);
       sv_[i] = val;
-      if (computeVectors && val > 0) { S_.set(i, i, 1 / val); }
+      if (computeVectors && (val > 0)) { S_.set(i, i, 1 / val); }
     }
 
     if (computeVectors) {

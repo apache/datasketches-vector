@@ -41,6 +41,9 @@ public enum MatrixFamily {
    * matrix.
    */
   MATRIX(128, "Matrix", 2, 3),
+  /**
+   * Select Frequent Directions Family
+   */
   FREQUENTDIRECTIONS(129, "FrequentDirections", 2, 4);
 
 
@@ -80,7 +83,7 @@ public enum MatrixFamily {
   public void checkFamilyID(final int id) {
     if (id != id_) {
       throw new IllegalArgumentException(
-              "Possible Corruption: This Family " + this.toString()
+              "Possible Corruption: This Family " + toString()
                       + " does not match the ID of the given Family: " + idToFamily(id).toString());
     }
   }

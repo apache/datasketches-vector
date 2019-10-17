@@ -31,6 +31,7 @@ import org.apache.datasketches.memory.Memory;
 import org.apache.datasketches.memory.WritableMemory;
 import org.apache.datasketches.vector.MatrixFamily;
 
+@SuppressWarnings("javadoc")
 public class MatrixTest {
 
   @Test

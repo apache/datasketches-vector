@@ -28,7 +28,9 @@ import org.testng.annotations.Test;
 import org.apache.datasketches.memory.Memory;
 import org.apache.datasketches.memory.WritableMemory;
 
+@SuppressWarnings("javadoc")
 public class MatrixImplOjAlgoTest {
+
   @Test
   public void checkInstantiation() {
     final int nRows = 10;

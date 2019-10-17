@@ -19,7 +19,13 @@
 
 package org.apache.datasketches.vector.matrix;
 
+/**
+ * The MatrixType enum
+ */
 public enum MatrixType {
+  /**
+   * Select the ojAlgo
+   */
   OJALGO(1, "ojAlgo");
 
   private int id_;
@@ -30,8 +36,16 @@ public enum MatrixType {
     name_ = name;
   }
 
+  /**
+   * Gets the ID
+   * @return the ID
+   */
   public int getId() { return id_; }
 
+  /**
+   * Gets the name
+   * @return the name
+   */
   public String getName() { return name_; }
 
   @Override

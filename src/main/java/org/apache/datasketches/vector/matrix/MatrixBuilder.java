@@ -26,6 +26,9 @@ public class MatrixBuilder {
 
   private MatrixType type_ = MatrixType.OJALGO; // default type
 
+  /**
+   * Default no-op constructor.
+   */
   public MatrixBuilder() {}
 
   /**

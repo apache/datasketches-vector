@@ -35,6 +35,9 @@ import org.apache.datasketches.memory.Memory;
 import org.apache.datasketches.memory.WritableMemory;
 import org.apache.datasketches.vector.MatrixFamily;
 
+/**
+ * Implements the OJ-Algo Matrix operations.
+ */
 public final class MatrixImplOjAlgo extends Matrix {
   private PrimitiveDenseStore mtx_;
 
