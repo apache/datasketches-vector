@@ -19,17 +19,22 @@ language: java
 
 sudo: false # faster builds
 
+dist: trusty
+
 jdk:
  - openjdk8
 
 install:
- - mvn install -Dmaven.javadoc.skip=true -Dsource.skip=true -DskipTests=true -Dgpg.skip=true
+ - mvn clean install -q -Dmaven.javadoc.skip=true -Dsource.skip=true -DskipTests=true -Dgpg.skip=true
+
+before_script:
+ - _JAVA_OPTIONS="-Xmx4g -Xms1g"
 
 script:
- - mvn clean compile test -Dgpg.skip=true
+ - mvn clean compile test -q -Dgpg.skip=true
 
 after_success: 
-- bash <(curl -s https://codecov.io/bash)
+ - mvn clean test jacoco:report coveralls:report -q -DrepoToken=$coveralls_token
 
 notifications:
   email: false
