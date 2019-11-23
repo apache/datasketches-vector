@@ -21,7 +21,7 @@ package org.apache.datasketches.vector.matrix;
 
 import static org.apache.datasketches.vector.matrix.MatrixPreambleUtil.LS;
 
-import org.ojalgo.matrix.store.PrimitiveDenseStore;
+import org.ojalgo.matrix.store.Primitive64Store;
 
 import org.apache.datasketches.memory.Memory;
 import org.apache.datasketches.vector.MatrixFamily;
@@ -62,8 +62,8 @@ public abstract class Matrix {
   public static Matrix wrap(final Object mtx) {
     if (mtx == null) {
       return null;
-    } else if (mtx instanceof PrimitiveDenseStore) {
-      return MatrixImplOjAlgo.wrap((PrimitiveDenseStore) mtx);
+    } else if (mtx instanceof Primitive64Store) {
+      return MatrixImplOjAlgo.wrap((Primitive64Store) mtx);
     }
     else {
       throw new IllegalArgumentException("wrap() does not currently support "

@@ -22,7 +22,7 @@ package org.apache.datasketches.vector.matrix;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.fail;
 
-import org.ojalgo.matrix.store.PrimitiveDenseStore;
+import org.ojalgo.matrix.store.Primitive64Store;
 import org.testng.annotations.Test;
 
 import org.apache.datasketches.memory.Memory;
@@ -39,7 +39,7 @@ public class MatrixImplOjAlgoTest {
     assertEquals(m.getNumRows(), nRows);
     assertEquals(m.getNumColumns(), nCols);
 
-    final PrimitiveDenseStore pds = (PrimitiveDenseStore) m.getRawObject();
+    final Primitive64Store pds = (Primitive64Store) m.getRawObject();
     assertEquals(pds.countRows(), nRows);
     assertEquals(pds.countColumns(), nCols);
 
@@ -215,7 +215,7 @@ public class MatrixImplOjAlgoTest {
    * starting with 1.0.
    * @param nRows number of rows
    * @param nCols number of columns
-   * @return PrimitiveDenseStore, suitable for direct use or wrapping
+   * @return Primitive64Store, suitable for direct use or wrapping
    */
   private static Matrix generateIncreasingEye(final int nRows, final int nCols) {
     final Matrix m = MatrixImplOjAlgo.newInstance(nRows, nCols);

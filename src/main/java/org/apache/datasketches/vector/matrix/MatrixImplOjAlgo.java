@@ -29,25 +29,25 @@ import static org.apache.datasketches.vector.matrix.MatrixPreambleUtil.extractNu
 import static org.apache.datasketches.vector.matrix.MatrixPreambleUtil.extractPreLongs;
 import static org.apache.datasketches.vector.matrix.MatrixPreambleUtil.extractSerVer;
 
-import org.ojalgo.matrix.store.PrimitiveDenseStore;
+import org.ojalgo.matrix.store.Primitive64Store;
 
 import org.apache.datasketches.memory.Memory;
 import org.apache.datasketches.memory.WritableMemory;
 import org.apache.datasketches.vector.MatrixFamily;
 
 /**
- * Implements the OJ-Algo Matrix operations.
+ * Implements the ojAlgo Matrix operations.
  */
 public final class MatrixImplOjAlgo extends Matrix {
-  private PrimitiveDenseStore mtx_;
+  private Primitive64Store mtx_;
 
   private MatrixImplOjAlgo(final int numRows, final int numCols) {
-    mtx_ = PrimitiveDenseStore.FACTORY.makeZero(numRows, numCols);
+    mtx_ = Primitive64Store.FACTORY.make(numRows, numCols);
     numRows_ = numRows;
     numCols_ = numCols;
   }
 
-  private MatrixImplOjAlgo(final PrimitiveDenseStore mtx) {
+  private MatrixImplOjAlgo(final Primitive64Store mtx) {
     mtx_ = mtx;
     numRows_ = (int) mtx.countRows();
     numCols_ = (int) mtx.countColumns();
@@ -100,7 +100,7 @@ public final class MatrixImplOjAlgo extends Matrix {
     return matrix;
   }
 
-  static Matrix wrap(final PrimitiveDenseStore mtx) {
+  static Matrix wrap(final Primitive64Store mtx) {
     return new MatrixImplOjAlgo(mtx);
   }
 

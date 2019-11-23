@@ -94,7 +94,7 @@ under the License.
   <properties>
     
     <!-- UNIQUE FOR THIS JAVA COMPONENT -->
-    <ojalgo.version>47.0.0</ojalgo.version> 
+    <ojalgo.version>48.0.0-SNAPSHOT</ojalgo.version> 
     <datasketches-memory.version>1.1.0-incubating</datasketches-memory.version>
     <!-- END:UNIQUE FOR THIS JAVA COMPONENT -->
     
