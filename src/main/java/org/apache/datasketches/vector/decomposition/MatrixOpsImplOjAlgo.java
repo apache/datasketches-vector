@@ -25,7 +25,7 @@ import org.ojalgo.matrix.decomposition.Eigenvalue;
 import org.ojalgo.matrix.decomposition.QR;
 import org.ojalgo.matrix.decomposition.SingularValue;
 import org.ojalgo.matrix.store.MatrixStore;
-import org.ojalgo.matrix.store.PrimitiveDenseStore;
+import org.ojalgo.matrix.store.Primitive64Store;
 import org.ojalgo.matrix.store.SparseStore;
 import org.ojalgo.random.Normal;
 
@@ -34,11 +34,11 @@ import org.apache.datasketches.vector.matrix.MatrixType;
 
 class MatrixOpsImplOjAlgo extends MatrixOps {
   private double[] sv_;
-  private PrimitiveDenseStore Vt_;
+  private Primitive64Store Vt_;
 
   // work objects for SISVD
-  private PrimitiveDenseStore block_;
-  private PrimitiveDenseStore T_; // also used in SymmetricEVD
+  private Primitive64Store block_;
+  private Primitive64Store T_; // also used in SymmetricEVD
   private QR<Double> qr_;
 
   // work objects for Symmetric EVD
@@ -68,21 +68,21 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
     }
 
     if (computeVectors && (Vt_ == null)) {
-      Vt_ = PrimitiveDenseStore.FACTORY.makeZero(n_, d_);
+      Vt_ = Primitive64Store.FACTORY.make(n_, d_);
       S_ = SparseStore.makePrimitive(sv_.length, sv_.length);
     }
 
     switch (algo_) {
       case FULL:
-        computeFullSVD((PrimitiveDenseStore) A.getRawObject(), computeVectors);
+        computeFullSVD((Primitive64Store) A.getRawObject(), computeVectors);
         return;
 
       case SISVD:
-        computeSISVD((PrimitiveDenseStore) A.getRawObject(), computeVectors);
+        computeSISVD((Primitive64Store) A.getRawObject(), computeVectors);
         return;
 
       case SYM:
-        computeSymmEigSVD((PrimitiveDenseStore) A.getRawObject(), computeVectors);
+        computeSymmEigSVD((Primitive64Store) A.getRawObject(), computeVectors);
         return;
 
       default:
@@ -131,7 +131,7 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
     }
 
     // store the result back in A
-    S_.multiply(Vt_, (PrimitiveDenseStore) A.getRawObject());
+    S_.multiply(Vt_, (Primitive64Store) A.getRawObject());
 
     return svAdjustment;
   }
@@ -139,8 +139,8 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
   @Override
   Matrix applyAdjustment(final Matrix A, final double svAdjustment) {
     // copy A before decomposing
-    final PrimitiveDenseStore result
-            = PrimitiveDenseStore.FACTORY.copy((PrimitiveDenseStore) A.getRawObject());
+    final Primitive64Store result
+            = Primitive64Store.FACTORY.copy((Primitive64Store) A.getRawObject());
     svd(Matrix.wrap(result), true);
 
     for (int i = 0; i < (k_ - 1); ++i) {
@@ -159,12 +159,12 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
 
   private void computeFullSVD(final MatrixStore<Double> A, final boolean computeVectors) {
     if (svd_ == null) {
-      svd_ = SingularValue.make(A);
+      svd_ = SingularValue.PRIMITIVE.make(A);
     }
 
     if (computeVectors) {
       svd_.decompose(A);
-      svd_.getQ2().transpose().supplyTo(Vt_);
+      svd_.getV().transpose().supplyTo(Vt_);
     } else {
       svd_.computeValuesOnly(A);
     }
@@ -175,9 +175,9 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
     // want to iterate on smaller dimension of A (n x d)
     // currently, error in constructor if d < n, so n is always the smaller dimension
     if (block_ == null) {
-      block_ = PrimitiveDenseStore.FACTORY.makeFilled(d_, k_, new Normal(0.0, 1.0));
+      block_ = Primitive64Store.FACTORY.makeFilled(d_, k_, new Normal(0.0, 1.0));
       qr_ = QR.PRIMITIVE.make(block_);
-      T_ = PrimitiveDenseStore.FACTORY.makeZero(n_, k_);
+      T_ = Primitive64Store.FACTORY.make(n_, k_);
     } else {
       block_.fillAll(new Normal(0.0, 1.0));
     }
@@ -196,7 +196,7 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
 
     // Rayleigh-Ritz postprocessing
 
-    final SingularValue<Double> svd = SingularValue.make(T_);
+    final SingularValue<Double> svd = SingularValue.PRIMITIVE.make(T_);
     svd.compute(block_.premultiply(A));
 
     svd.getSingularValues(sv_);
@@ -204,7 +204,7 @@ class MatrixOpsImplOjAlgo extends MatrixOps {
     if (computeVectors) {
       // V = block * Q2^T so V^T = Q2 * block^T
       // and ojAlgo figures out that it only needs to fill the first k_ rows of Vt_
-      svd.getQ2().multiply(block_.transpose()).supplyTo(Vt_);
+      svd.getV().multiply(block_.transpose()).supplyTo(Vt_);
     }
   }
 
