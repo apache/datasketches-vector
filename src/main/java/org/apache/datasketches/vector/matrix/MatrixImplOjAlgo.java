@@ -115,7 +115,7 @@ public final class MatrixImplOjAlgo extends Matrix {
     final long numElements = mtx_.count();
     assert numElements == (mtx_.countColumns() * mtx_.countRows());
 
-    final int outBytes = (int) ((preLongs * Long.BYTES) + (numElements * Double.BYTES));
+    final int outBytes = (int) (((long)preLongs * Long.BYTES) + (numElements * Double.BYTES));
     final byte[] outByteArr = new byte[outBytes];
     final WritableMemory memOut = WritableMemory.wrap(outByteArr);
     final Object memObj = memOut.getArray();
@@ -147,7 +147,7 @@ public final class MatrixImplOjAlgo extends Matrix {
 
     assert numElements < mtx_.count();
 
-    final int outBytes = (int) ((preLongs * Long.BYTES) + (numElements * Double.BYTES));
+    final int outBytes = (int) (((long)preLongs * Long.BYTES) + (numElements * Double.BYTES));
     final byte[] outByteArr = new byte[outBytes];
     final WritableMemory memOut = WritableMemory.wrap(outByteArr);
     final Object memObj = memOut.getArray();
@@ -163,7 +163,7 @@ public final class MatrixImplOjAlgo extends Matrix {
     MatrixPreambleUtil.insertNumColumnsUsed(memObj, memAddr, numCols);
 
     // write elements in column-major order
-    long offsetBytes = preLongs * Long.BYTES;
+    long offsetBytes = (long)preLongs * Long.BYTES;
     for (int c = 0; c < numCols; ++c) {
       for (int r = 0; r < numRows; ++r) {
         memOut.putDouble(offsetBytes, mtx_.doubleValue(r, c));

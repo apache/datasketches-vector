@@ -131,7 +131,7 @@ public final class PreambleUtil {
       sb.append("Bytes 24-31: SV Adjustment    : ").append(svAdjustment).append(LS);
     }
 
-    final long numBytes = numRows * d * Double.BYTES;
+    final long numBytes = (long)numRows * d * Double.BYTES;
     sb.append("TOTAL Sketch Bytes            : ").append(mem.getCapacity()).append(LS)
             .append("  Preamble Bytes              : ").append(preLongs << 3).append(LS)
             .append("  Data Bytes                  : ").append(numBytes).append(LS)

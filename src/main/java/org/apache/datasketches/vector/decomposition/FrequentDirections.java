@@ -134,7 +134,7 @@ public final class FrequentDirections {
       return new FrequentDirections(k, d);
     }
 
-    final long offsetBytes = preLongs * Long.BYTES;
+    final long offsetBytes = (long)preLongs * Long.BYTES;
     final long mtxBytes = srcMem.getCapacity() - offsetBytes;
     final Matrix B = Matrix.heapify(srcMem.region(offsetBytes, mtxBytes), type);
     assert B != null;
@@ -209,7 +209,7 @@ public final class FrequentDirections {
    * @param fd A Frequent Direction sketch to be merged.
    */
   public void update(final FrequentDirections fd) {
-    if (fd == null || fd.nextZeroRow_ == 0) {
+    if ((fd == null) || (fd.nextZeroRow_ == 0)) {
       return;
     }
 
@@ -293,9 +293,9 @@ public final class FrequentDirections {
     final double tmpSvAdj = svAdjustment_ + medianSVSq;
     final double[] svList = new double[k_];
 
-    for (int i = 0; i < k_ - 1; ++i) {
+    for (int i = 0; i < (k_ - 1); ++i) {
       final double val = sv[i];
-      double adjSqSV = val * val - medianSVSq;
+      double adjSqSV = (val * val) - medianSVSq;
       if (compensative) { adjSqSV += tmpSvAdj; }
       svList[i] = adjSqSV < 0 ? 0.0 : Math.sqrt(adjSqSV);
     }
@@ -405,7 +405,7 @@ public final class FrequentDirections {
     insertN(memObj, memAddr, n_);
     insertSVAdjustment(memObj, memAddr, svAdjustment_);
 
-    memOut.putByteArray(preLongs * Long.BYTES,
+    memOut.putByteArray((long)preLongs * Long.BYTES,
             B_.toCompactByteArray(nextZeroRow_, d_), 0, mtxBytes);
 
     return outArr;
@@ -460,8 +460,8 @@ public final class FrequentDirections {
       for (int i = 0; i < Math.min(k_, n_); ++i) {
         if (sv[i] > 0.0) {
           double val = sv[i];
-          if (val > 0.0 && applyCompensation) {
-            val = Math.sqrt(val * val + svAdjustment_);
+          if ((val > 0.0) && applyCompensation) {
+            val = Math.sqrt((val * val) + svAdjustment_);
           }
 
           sb.append("   \t").append(i).append(":\t").append(val).append(LS);
