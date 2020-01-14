@@ -19,13 +19,6 @@
 
 [![Build Status](https://travis-ci.org/apache/incubator-datasketches-vector.svg?branch=master)](https://travis-ci.org/apache/incubator-datasketches-vector)
 
-<!--
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.apache.datasketches/datasketches-vector/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.apache.datasketches/datasketches-vector)
-[![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/apache/incubator-datasketches-vector.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/apache/incubator-datasketches-vector/context:java)
-[![Total alerts](https://img.shields.io/lgtm/alerts/g/apache/incubator-datasketches-vector.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/apache/incubator-datasketches-vector/alerts/)
-[![Coverage Status](https://coveralls.io/repos/github/apache/incubator-datasketches-vector/badge.svg?branch=master&service=github)](https://coveralls.io/github/apache/incubator-datasketches-vector?branch=master)
--->
-
 =================
 
 # DataSketches Vector Library (Experimental)
@@ -34,19 +27,16 @@ This code is offered "as is" and may not be to the quality of code in, for examp
 
 ## Documentation
 
-### [DataSketches Library Website](https://datasketches.github.io/)
+### [DataSketches Library Website](https://datasketches.apache.org/)
 
-### [Comments](https://groups.google.com/forum/#!forum/sketches-user)
-
-### [Building](https://github.com/DataSketches/sketches-vector/blob/master/README_building.md)
 
 ## Build Instructions
 
-### JDK8 is Required Compiler
+### JDK8 is required to compile
 This DataSketches component is pure Java and you must compile using JDK 8.
 
 ### Recommended Build Tool
-The DataSketches-java component structured as a Maven project and Maven is the recommended Build Tool.
+This DataSketches component is structured as a Maven project and Maven is the recommended Build Tool.
 
 There are two types of tests: normal unit tests and tests run by the strict profile.  
 
