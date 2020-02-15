@@ -76,7 +76,7 @@ See the pom.xml file for test dependencies.
     * datasketches -- general user questions
     * datasketches-dev -- similar to our Apache [Developers Mail list](https://lists.apache.org/list.html?dev@datasketches.apache.org), except more interactive, but not as easily searchable.
 
-* For bugs and performance issues please subscribe: [Issues for datasketches-vector](https://github.com/apache/incubator-datasketches-vector/issues) 
+* For bugs and performance issues: [Issues for datasketches-vector](https://github.com/apache/incubator-datasketches-vector/issues) 
 
 * For general questions about using the library please subscribe: [Users Mail List](https://lists.apache.org/list.html?users@datasketches.apache.org)
 
