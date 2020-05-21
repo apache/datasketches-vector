@@ -21,16 +21,16 @@
 
 =================
 
-# DataSketches Vector Library (Experimental)
+# DataSketches Java Vector Library (Experimental)
 This code is offered "as is" and may not be to the quality of code in, for example, the core datasketches-java repository. 
 
+Please visit the main [DataSketches website](https://datasketches.apache.org) for more information. 
 
-## Documentation
-
-### [DataSketches Library Website](https://datasketches.apache.org/)
+If you are interested in making contributions to this site please see our [Community](https://datasketches.apache.org/docs/Community/) page for how to contact us.
 
 
 ## Build Instructions
+__NOTE:__ This component accesses resource files for testing. As a result, the directory elements of the full absolute path of the target installation directory must qualify as Java identifiers. In other words, the directory elements must not have any space characters (or non-Java identifier characters) in any of the path elements. This is required by the Oracle Java Specification in order to ensure location-independent access to resources: [See Oracle Location-Independent Access to Resources](https://docs.oracle.com/javase/8/docs/technotes/guides/lang/resources.html)
 
 ### JDK8 is required to compile
 This DataSketches component is pure Java and you must compile using JDK 8.
@@ -71,13 +71,6 @@ There are two run-time dependencies:
 #### Testing
 See the pom.xml file for test dependencies.
 
-## How to Contact Us
-* We have two ASF [the-ASF.slack.com](http://the-ASF.slack.com) slack channels:
-    * datasketches -- general user questions
-    * datasketches-dev -- similar to our Apache [Developers Mail list](https://lists.apache.org/list.html?dev@datasketches.apache.org), except more interactive, but not as easily searchable.
+----
 
-* For bugs and performance issues: [Issues for datasketches-vector](https://github.com/apache/incubator-datasketches-vector/issues) 
-
-* For general questions about using the library please subscribe: [Users Mail List](https://lists.apache.org/list.html?users@datasketches.apache.org)
-
-* If you are interested in contributing please subscribe: [Developers Mail list](https://lists.apache.org/list.html?dev@datasketches.apache.org)
+Disclaimer: Apache DataSketches is an effort undergoing incubation at The Apache Software Foundation (ASF), sponsored by the Apache Incubator. Incubation is required of all newly accepted projects until a further review indicates that the infrastructure, communications, and decision making process have stabilized in a manner consistent with other successful ASF projects. While incubation status is not necessarily a reflection of the completeness or stability of the code, it does indicate that the project has yet to be fully endorsed by the ASF.
