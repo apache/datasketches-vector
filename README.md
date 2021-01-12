@@ -17,7 +17,7 @@
     under the License.
 -->
 
-[![Build Status](https://travis-ci.org/apache/incubator-datasketches-vector.svg?branch=master)](https://travis-ci.org/apache/incubator-datasketches-vector)
+[![Build Status](https://travis-ci.org/apache/datasketches-vector.svg?branch=master)](https://travis-ci.org/apache/datasketches-vector)
 
 =================
 
@@ -54,11 +54,11 @@ To install jars built from the downloaded source:
 
 This will create the following jars:
 
-* datasketches-vector-X.Y.Z-incubating.jar The compiled main class files.
-* datasketches-vector-X.Y.Z-incubating-tests.jar The compiled test class files.
-* datasketches-vector-X.Y.Z-incubating-sources.jar The main source files.
-* datasketches-vector-X.Y.Z-incubating-test-sources.jar The test source files
-* datasketches-vector-X.Y.Z-incubating-javadoc.jar  The compressed Javadocs.
+* datasketches-vector-X.Y.Z.jar The compiled main class files.
+* datasketches-vector-X.Y.Z-tests.jar The compiled test class files.
+* datasketches-vector-X.Y.Z-sources.jar The main source files.
+* datasketches-vector-X.Y.Z-test-sources.jar The test source files
+* datasketches-vector-X.Y.Z-javadoc.jar  The compressed Javadocs.
 
 ### Dependencies
 
@@ -71,6 +71,3 @@ There are two run-time dependencies:
 #### Testing
 See the pom.xml file for test dependencies.
 
-----
-
-Disclaimer: Apache DataSketches is an effort undergoing incubation at The Apache Software Foundation (ASF), sponsored by the Apache Incubator. Incubation is required of all newly accepted projects until a further review indicates that the infrastructure, communications, and decision making process have stabilized in a manner consistent with other successful ASF projects. While incubation status is not necessarily a reflection of the completeness or stability of the code, it does indicate that the project has yet to be fully endorsed by the ASF.
