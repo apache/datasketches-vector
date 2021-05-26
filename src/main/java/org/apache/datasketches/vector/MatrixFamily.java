@@ -44,15 +44,21 @@ public enum MatrixFamily {
   /**
    * Select Frequent Directions Family
    */
-  FREQUENTDIRECTIONS(129, "FrequentDirections", 2, 4);
+  FREQUENTDIRECTIONS(129, "FrequentDirections", 2, 4),
+
+  /**
+   * Aggregation for vector means/variances.
+   */
+  VECTORNORMALIZER(130, "VectorNormalizer", 1, 2)
+  ;
 
 
   private static final Map<Integer, MatrixFamily> lookupID = new HashMap<>();
   private static final Map<String, MatrixFamily> lookupFamName = new HashMap<>();
-  private int id_;
-  private String famName_;
-  private int minPreLongs_;
-  private int maxPreLongs_;
+  private final int id_;
+  private final String famName_;
+  private final int minPreLongs_;
+  private final int maxPreLongs_;
 
   static {
     for (MatrixFamily f : values()) {
