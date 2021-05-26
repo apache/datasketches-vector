@@ -67,7 +67,7 @@ public final class FrequentDirections {
 
   private double svAdjustment_;
 
-  private Matrix B_;
+  private final Matrix B_;
 
   private SVDAlgo algo_ = DEFAULT_SVD_ALGO;
 

@@ -85,8 +85,9 @@ under the License.
 
   <properties>
     <!-- UNIQUE FOR THIS JAVA COMPONENT -->
-    <ojalgo.version>48.0.0</ojalgo.version> 
-    <datasketches-memory.version>1.2.0-incubating</datasketches-memory.version>
+    <ojalgo.version>48.4.2</ojalgo.version>
+    <datasketches-memory.version>1.3.0</datasketches-memory.version>
+    <!--<commons-math3.version>3.6.1</commons-math3.version>-->
     <!-- END:UNIQUE FOR THIS JAVA COMPONENT -->
 
     <!-- Test -->
@@ -165,6 +166,13 @@ under the License.
       <artifactId>datasketches-memory</artifactId>
       <version>${datasketches-memory.version}</version>
     </dependency>
+    <!--
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-math3</artifactId>
+      <version>${commons-math3.version}</version>
+    </dependency>
+    -->
     <!-- END: UNIQUE FOR THIS JAVA COMPONENT -->
 
     <!-- Test Scope -->

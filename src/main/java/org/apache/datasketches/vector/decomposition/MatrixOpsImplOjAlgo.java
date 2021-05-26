@@ -33,7 +33,7 @@ import org.apache.datasketches.vector.matrix.Matrix;
 import org.apache.datasketches.vector.matrix.MatrixType;
 
 class MatrixOpsImplOjAlgo extends MatrixOps {
-  private double[] sv_;
+  private final double[] sv_;
   private Primitive64Store Vt_;
 
   // work objects for SISVD

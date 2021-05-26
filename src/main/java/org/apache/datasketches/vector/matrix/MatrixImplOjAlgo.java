@@ -39,7 +39,7 @@ import org.apache.datasketches.vector.MatrixFamily;
  * Implements the ojAlgo Matrix operations.
  */
 public final class MatrixImplOjAlgo extends Matrix {
-  private Primitive64Store mtx_;
+  private final Primitive64Store mtx_;
 
   private MatrixImplOjAlgo(final int numRows, final int numCols) {
     mtx_ = Primitive64Store.FACTORY.make(numRows, numCols);

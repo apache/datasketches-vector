@@ -234,6 +234,7 @@ public class FrequentDirectionsTest {
 
     // with compensation
     m = fd.getResult(true);
+    assertNotNull(m);
     sv = fd.getSingularValues(true);
     for (int i = k; i > 1; --i) {
       final double val = Math.abs(m.getElement(k - i, i));
@@ -338,6 +339,7 @@ public class FrequentDirectionsTest {
     mem.putByte(PreambleUtil.SER_VER_BYTE, (byte) 0);
     try {
       FrequentDirections.heapify(mem);
+      fail();
     } catch (final IllegalArgumentException e) {
       // expected
     }
@@ -348,6 +350,7 @@ public class FrequentDirectionsTest {
     mem.putByte(PreambleUtil.FAMILY_BYTE, (byte) 0);
     try {
       FrequentDirections.heapify(mem);
+      fail();
     } catch (final IllegalArgumentException e) {
       // expected
     }
@@ -360,6 +363,7 @@ public class FrequentDirectionsTest {
     Memory mem = Memory.wrap(bytes);
     try {
       FrequentDirections.heapify(mem);
+      fail();
     } catch (final IllegalArgumentException e) {
       // expected
     }
@@ -371,6 +375,7 @@ public class FrequentDirectionsTest {
     mem = Memory.wrap(bytes);
     try {
       FrequentDirections.heapify(mem);
+      fail();
     } catch (final IllegalArgumentException e) {
       // expected
     }
