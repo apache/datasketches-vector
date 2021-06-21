@@ -24,6 +24,7 @@ import static org.apache.datasketches.memory.UnsafeUtil.unsafe;
 import org.apache.datasketches.memory.Memory;
 import org.apache.datasketches.memory.WritableMemory;
 import org.apache.datasketches.vector.MatrixFamily;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
  * Computes mean and variance for each of d dimensions of an input vector using Welford's online algorithm,
@@ -43,6 +44,12 @@ import org.apache.datasketches.vector.MatrixFamily;
  *
  *      ||       8        |   9    |   10   |   11   |   12  |   13   |   14   |  15   |
  *  1   ||-------------------------Num. Vectors Processed (n)--------------------------|
+ *
+ *      ||       16       |   17   |   18   |   19   |   20  |   21   |   22   |  23   |
+ *  2   ||---------------------------Intercept (target mean)---------------------------|
+ *
+ *      ||       24       |   25   |   26   |   27   |   28  |   29   |   30   |  31   |
+ *  3   ||-----------------------------start of mean array-----------------------------|
  * </pre>
  *
  * @author Jon Malkin
@@ -52,10 +59,11 @@ public class VectorNormalizer {
   private final int d_;
   private final double[] mean_;
   private final double[] M2_;
+  private double intercept_;
   private long n_;
 
   // Preamble byte Addresses
-  static final int PREAMBLE_LONGS_BYTE = 0;
+  static final int PREAMBLE_LONGS_BYTE   = 0;
   static final int SER_VER_BYTE          = 1;
   static final int FAMILY_BYTE           = 2;
   static final int FLAGS_BYTE            = 3;
@@ -78,9 +86,10 @@ public class VectorNormalizer {
       throw new IllegalArgumentException("d cannot be < 1. Found: " + d);
 
     d_ = d;
+    n_ = 0;
+    intercept_ = 0.0;
     mean_ = new double[d_];
     M2_ = new double[d_];
-    n_ = 0;
   }
 
   /**
@@ -90,13 +99,15 @@ public class VectorNormalizer {
   public VectorNormalizer(final VectorNormalizer other) {
     d_ = other.d_;
     n_ = other.n_;
+    intercept_ = other.intercept_;
     mean_ = other.mean_.clone();
     M2_ = other.M2_.clone();
   }
 
-  private VectorNormalizer(final int d, final long n, final double[] mean, final double[] M2) {
+  private VectorNormalizer(final int d, final long n, final double[] mean, final double[] M2, final double intercept) {
     d_ = d;
     n_ = n;
+    intercept_ = intercept;
     mean_ = mean;
     M2_ = M2;
   }
@@ -149,12 +160,15 @@ public class VectorNormalizer {
     long offsetBytes = (long) preLongs * Long.BYTES;
 
     // check capacity for the rest
-    final long bytesNeeded = offsetBytes + (2L * d * Double.BYTES);
+    final long bytesNeeded = offsetBytes + (((2L * d) + 1) * Double.BYTES);
     if (srcMem.getCapacity() < bytesNeeded) {
       throw new IllegalArgumentException(
           "Possible Corruption: Size of Memory not large enough: Size: " + srcMem.getCapacity()
               + ", Required: " + bytesNeeded);
     }
+
+    final double intercept = srcMem.getDouble(offsetBytes);
+    offsetBytes += Double.BYTES;
 
     final double[] mean = new double[d];
     srcMem.getDoubleArray(offsetBytes, mean, 0, d);
@@ -163,7 +177,7 @@ public class VectorNormalizer {
     final double[] M2 = new double[d];
     srcMem.getDoubleArray(offsetBytes, M2, 0, d);
 
-    return new VectorNormalizer(d, n, mean, M2);
+    return new VectorNormalizer(d, n, mean, M2, intercept);
   }
 
   /**
@@ -178,7 +192,7 @@ public class VectorNormalizer {
         ? MatrixFamily.VECTORNORMALIZER.getMinPreLongs()
         : MatrixFamily.VECTORNORMALIZER.getMaxPreLongs();
 
-    final int outBytes = (preLongs * Long.BYTES) + (empty ? 0 : 2 * d_ * Double.BYTES);
+    final int outBytes = (preLongs * Long.BYTES) + (empty ? 0 : (1 + 2 * d_) * Double.BYTES);
     final byte[] outArr = new byte[outBytes];
     final WritableMemory memOut = WritableMemory.wrap(outArr);
     final Object memObj = memOut.getArray();
@@ -193,6 +207,8 @@ public class VectorNormalizer {
     if (!empty) {
       insertN(memObj, memAddr, n_);
       long offset = (long) preLongs * Long.BYTES;
+      memOut.putDouble(offset, intercept_);
+      offset += Double.BYTES;
       memOut.putDoubleArray(offset, mean_, 0, d_);
       offset += (long) d_ * Double.BYTES;
       memOut.putDoubleArray(offset, M2_, 0, d_);
@@ -242,6 +258,17 @@ public class VectorNormalizer {
   }
 
   /**
+   * Returns the mean of the target value, aka the intercept
+   * @return Mean of the target value
+   */
+  public double getIntercept() {
+    if (n_ == 0)
+      return Double.NaN;
+    else
+      return intercept_;
+  }
+
+  /**
    * Returns the sample variance array represented in this object. Returns an array of NaN if N = 0 and an
    * array of zeros if N = 1.
    * @return The sample variance array represented in this object
@@ -287,7 +314,7 @@ public class VectorNormalizer {
     }
   }
 
-  public void update(double[] x) {
+  public void update(final double[] x, final double target) {
     if (x == null)
       return;
 
@@ -302,17 +329,18 @@ public class VectorNormalizer {
       double d2 = x[i] - mean_[i];  // x_i - newMean_i
       M2_[i] += d1 * d2;
     }
+
+    double delta = target - intercept_;
+    intercept_ += delta / n_;
   }
 
-  public void merge(VectorNormalizer other) {
-    if (other == null)
-      return;
-
+  public void merge(@NonNull final VectorNormalizer other) {
     if (other.d_ != d_)
       throw new IllegalArgumentException("Input VectorNormalizer must have d= " + d_ + ". Found: " + other.d_);
 
     long combinedN = n_ + other.n_;
     double varCountScalar = (n_ * other.n_) / (double) combinedN; // n_A * n_B / (n_A + n_B)
+    intercept_ = ((n_ * intercept_) + (other.n_ * other.intercept_)) / combinedN;
     for (int i = 0; i < d_; ++i) {
       double meanDiff = other.mean_[i] - mean_[i];
       mean_[i] = ((n_ * mean_[i]) + (other.n_ * other.mean_[i])) / combinedN;
@@ -325,7 +353,7 @@ public class VectorNormalizer {
     if (n_ == 0) {
       return MatrixFamily.VECTORNORMALIZER.getMinPreLongs() * Long.BYTES;
     } else {
-      return (MatrixFamily.VECTORNORMALIZER.getMaxPreLongs()) * Long.BYTES + (2 * d_ * Double.BYTES);
+      return (MatrixFamily.VECTORNORMALIZER.getMaxPreLongs()) * Long.BYTES + ((1 + 2 * d_) * Double.BYTES);
     }
   }
 

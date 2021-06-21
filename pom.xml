@@ -166,6 +166,11 @@ under the License.
       <artifactId>datasketches-memory</artifactId>
       <version>${datasketches-memory.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.checkerframework</groupId>
+      <artifactId>checker-qual</artifactId>
+      <version>3.10.0</version>
+    </dependency>
     <!--
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -173,6 +178,11 @@ under the License.
       <version>${commons-math3.version}</version>
     </dependency>
     -->
+    <dependency>
+      <groupId>com.google.errorprone</groupId>
+      <artifactId>javac</artifactId>
+      <version>9+181-r4173-1</version>
+    </dependency>
     <!-- END: UNIQUE FOR THIS JAVA COMPONENT -->
 
     <!-- Test Scope -->

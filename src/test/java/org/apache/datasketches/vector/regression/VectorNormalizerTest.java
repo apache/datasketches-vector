@@ -34,7 +34,6 @@ import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
-import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.apache.datasketches.memory.Memory;
@@ -88,7 +87,8 @@ public class VectorNormalizerTest {
     final VectorNormalizer vn = new VectorNormalizer(d);
 
     final double[] input = {-1, 0, 0.5};
-    vn.update(input);
+    final double target = 0.3;
+    vn.update(input, target);
     assertEquals(vn.getN(), 1);
     assertFalse(vn.isEmpty());
 
@@ -107,6 +107,8 @@ public class VectorNormalizerTest {
       assertEquals(sampleVar[i], 0.0);
       assertEquals(popVar[i], 0.0);
     }
+    // intercept shoudl equal target
+    assertEquals(vn.getIntercept(), target);
   }
 
   @Test
@@ -123,7 +125,8 @@ public class VectorNormalizerTest {
       input[0] = rand.nextGaussian();      // mean = 0.0, var = 1.0
       input[1] = rand.nextDouble() * 2.0;  // mean = 1.0, var = (2-0)^2/12 = 1/3
       input[2] = rand.nextDouble() - 0.5;  // mean = 0.0, var = (1-0)^2/12
-      vn.update(input);
+      double target = rand.nextGaussian() - 1.0; // mean = -1.0
+      vn.update(input, target);
     }
     assertFalse(vn.isEmpty());
 
@@ -132,6 +135,7 @@ public class VectorNormalizerTest {
     assertEquals(mean[0], 0.0, tol);
     assertEquals(mean[1], 1.0, tol);
     assertEquals(mean[2], 0.0, tol);
+    assertEquals(vn.getIntercept(), -1.0, tol);
 
     // n is large enough that sample vs population variance won't matter for testing
     final double[] sampleVar = vn.getSampleVariance();
@@ -165,15 +169,18 @@ public class VectorNormalizerTest {
     // data expectations:
     // dimension 0: zero-mean, unit-variance Gaussian, even after merging
     // dimension 1: U[0,2] + U[2,4) -> U[0,4), so mean = 2.0 and var = 4^2/12=4/3
+    // target: N(-1,1) + N(1,1), so mean = 0.0 and variance unmeasured
     final double[] input = new double[d];
     for (int i = 0; i < n; ++i) {
       input[0] = rand.nextGaussian();
       input[1] = (rand.nextDouble() * 2.0) + 2.0;
-      vn1.update(input);
+      double target = rand.nextGaussian() - 1.0;
+      vn1.update(input, target);
 
       input[0] = rand.nextGaussian();
       input[1] = rand.nextDouble() * 2.0;
-      vn2.update(input);
+      target = rand.nextGaussian() + 1.0;
+      vn2.update(input, target);
     }
 
     vn1.merge(vn2);
@@ -182,6 +189,7 @@ public class VectorNormalizerTest {
     final double[] mean = vn1.getMean();
     assertEquals(mean[0], 0.0, tol);
     assertEquals(mean[1], 2.0, tol);
+    assertEquals(vn1.getIntercept(), 0.0, tol);
 
     // n is large enough that sample vs population variance won't matter for testing
     final double[] sampleVar = vn1.getSampleVariance();
@@ -200,15 +208,12 @@ public class VectorNormalizerTest {
 
     final double[] input = new double[d];
     for (int i = 0; i < d; ++i) { input[i] = 1.0 * i; }
-    vn.update(input);
-    assertEquals(vn.getN(), 1);
-
-    vn.update(null);
+    vn.update(input, 0.0);
     assertEquals(vn.getN(), 1);
 
     try {
       final double[] badInput = {1.0};
-      vn.update(badInput);
+      vn.update(badInput, 0.0);
       fail();
     } catch (IllegalArgumentException e) {
       // expected
@@ -223,10 +228,7 @@ public class VectorNormalizerTest {
 
     double[] input = new double[d];
     for (int i = 0; i < d; ++i) { input[i] = 1.0 * i; }
-    vn1.update(input);
-    assertEquals(vn1.getN(), 1);
-
-    vn1.merge(null);
+    vn1.update(input, 1.0);
     assertEquals(vn1.getN(), 1);
 
     // update with a non-empty VN with a different value of d
@@ -234,7 +236,7 @@ public class VectorNormalizerTest {
     final VectorNormalizer vn2 = new VectorNormalizer(d2);
     input = new double[d2];
     for (int i = 0; i < d2; ++i) { input[i] = 1.0 * i; }
-    vn2.update(input);
+    vn2.update(input, 2.0);
     assertEquals(vn2.getN(), 1);
 
     try {
@@ -258,7 +260,7 @@ public class VectorNormalizerTest {
       for (int j = 0; j < d; ++j) {
         input[j] = rand.nextDouble();
       }
-      vn.update(input);
+      vn.update(input, rand.nextGaussian());
     }
 
     final VectorNormalizer vnCopy = new VectorNormalizer(vn);
@@ -294,7 +296,7 @@ public class VectorNormalizerTest {
       for (int j = 0; j < d; ++j) {
         input[j] = rand.nextGaussian();
       }
-      vn.update(input);
+      vn.update(input, rand.nextDouble());
     }
 
     outBytes = vn.toByteArray();
@@ -304,6 +306,7 @@ public class VectorNormalizerTest {
     assertFalse(rebuilt.isEmpty());
     assertEquals(vn.getD(), rebuilt.getD());
     assertEquals(vn.getN(), rebuilt.getN());
+    assertEquals(vn.getIntercept(), rebuilt.getIntercept());
 
     final double[] originalMean = vn.getMean();
     final double[] rebuiltMean = vn.getMean();
@@ -413,7 +416,7 @@ public class VectorNormalizerTest {
       for (int j = 0; j < d; ++j) {
         input[j] = rand.nextDouble();
       }
-      vn.update(input);
+      vn.update(input, rand.nextDouble());
     }
     assertFalse(vn.isEmpty());
 
