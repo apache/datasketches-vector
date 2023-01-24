@@ -17,10 +17,6 @@
     under the License.
 -->
 
-[![Build Status](https://travis-ci.org/apache/datasketches-vector.svg?branch=master)](https://travis-ci.org/apache/datasketches-vector)
-
-=================
-
 # DataSketches Java Vector Library (Experimental)
 This code is offered "as is" and may not be to the quality of code in, for example, the core datasketches-java repository. 
 
